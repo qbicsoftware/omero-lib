@@ -5,6 +5,7 @@ import omero.gateway.LoginCredentials;
 import omero.gateway.SecurityContext;
 import omero.gateway.facility.BrowseFacility;
 import omero.gateway.facility.DataManagerFacility;
+import omero.gateway.facility.MetadataFacility;
 import omero.gateway.model.*;
 import omero.log.SimpleLogger;
 import omero.model.*;
@@ -232,6 +233,7 @@ public class BasicOMEROClient {
             while (j.hasNext()) {
                 image = j.next();
                 imageList.put(image.getId(), image.getName());
+
             }
 
         } catch (Exception e) {
@@ -239,6 +241,60 @@ public class BasicOMEROClient {
         }
 
         return imageList;
+    }
+
+    public HashMap<String, String> getImageInfo(long datasetId, long imageId) {
+
+        HashMap<String, String> imageInfo = new HashMap<String, String>();
+
+        try{
+
+            BrowseFacility browse = this.gateway.getFacility(BrowseFacility.class);
+            Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetId));
+
+            Iterator<ImageData> j = images.iterator();
+            ImageData image = null;
+            while (j.hasNext()) {
+                image = j.next();
+                if(image.getId() == imageId){
+                    break;
+                }
+            }
+
+            if (image != null){
+
+                imageInfo.put("name", image.getName());
+                imageInfo.put("desc", image.getDescription());
+
+                PixelsData pixels = image.getDefaultPixels();
+                int sizeZ = pixels.getSizeZ(); // The number of z-sections.
+                int sizeT = pixels.getSizeT(); // The number of timepoints.
+                int sizeC = pixels.getSizeC(); // The number of channels.
+                int sizeX = pixels.getSizeX(); // The number of pixels along the X-axis.
+                int sizeY = pixels.getSizeY(); // The number of pixels along the Y-axis.
+
+                imageInfo.put("size", String.valueOf(sizeX) + " x " + String.valueOf(sizeY)  + " x " + String.valueOf(sizeZ));
+                imageInfo.put("tps", String.valueOf(sizeT));
+
+                MetadataFacility mdf = gateway.getFacility(MetadataFacility.class);
+
+                String channelNamesString = "";
+                List<ChannelData> data = mdf.getChannelData(ctx, imageId);
+                for(ChannelData c : data) {
+                    channelNamesString = channelNamesString + c.getName() + ", ";
+                }
+                channelNamesString = channelNamesString.substring(0, channelNamesString.length() - 2);
+
+                imageInfo.put("channels", channelNamesString);
+            }
+
+
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        return imageInfo;
     }
 
 }

@@ -146,6 +146,7 @@ public class BasicOMEROClient {
 
         } catch (Exception e) {
             System.out.println(e);
+            return -1;
         }
 
 

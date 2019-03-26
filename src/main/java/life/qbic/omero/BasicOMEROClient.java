@@ -130,7 +130,7 @@ public class BasicOMEROClient {
 
     }
 
-    public void createProject(String name, String desc){
+    public long createProject(String name, String desc){
 
         try {
 
@@ -141,6 +141,8 @@ public class BasicOMEROClient {
             proj.setDescription(omero.rtypes.rstring(desc));
 
             IObject r = dm.saveAndReturnObject(this.ctx, proj);
+
+            return r.getId().getValue();
 
         } catch (Exception e) {
             System.out.println(e);

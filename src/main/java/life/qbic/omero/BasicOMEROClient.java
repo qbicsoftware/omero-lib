@@ -303,9 +303,9 @@ public class BasicOMEROClient {
         return imageInfo;
     }
 
-    public BufferedImage getThumbnail(long datasetId, long imageId) throws Exception{
+    public ByteArrayInputStream getThumbnail(long datasetId, long imageId) throws Exception{
 
-        BufferedImage img = null;
+        //BufferedImage img = null;
         ThumbnailStorePrx store = null;
         ByteArrayInputStream stream = null;
 
@@ -329,7 +329,7 @@ public class BasicOMEROClient {
             store.setPixelsId(pixels.getId());
             byte[] array = store.getThumbnail(omero.rtypes.rint(96), omero.rtypes.rint(96));
             stream = new ByteArrayInputStream(array);
-            img = ImageIO.read(stream);
+            //img = ImageIO.read(stream);
 
         }  catch (Exception e) {
             System.out.println(e);
@@ -337,7 +337,7 @@ public class BasicOMEROClient {
             if (store != null) store.close();
         }
 
-        return img;
+        return stream; //img;
 
     }
 

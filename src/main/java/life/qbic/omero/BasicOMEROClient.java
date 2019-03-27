@@ -6,12 +6,15 @@ import omero.gateway.SecurityContext;
 import omero.gateway.facility.BrowseFacility;
 import omero.gateway.facility.DataManagerFacility;
 import omero.gateway.facility.MetadataFacility;
+import omero.api.ThumbnailStorePrx;
 import omero.gateway.model.*;
 import omero.log.SimpleLogger;
 import omero.model.*;
 
+import java.awt.image.BufferedImage;
 import java.util.*;
-
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
 
 
 /////////////////////////////////////////////////////
@@ -253,7 +256,7 @@ public class BasicOMEROClient {
         try{
 
             BrowseFacility browse = this.gateway.getFacility(BrowseFacility.class);
-            Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetId));
+            Collection<ImageData> images = browse.getImagesForDatasets(this.ctx, Arrays.asList(datasetId));
 
             Iterator<ImageData> j = images.iterator();
             ImageData image = null;
@@ -298,6 +301,44 @@ public class BasicOMEROClient {
         }
 
         return imageInfo;
+    }
+
+    public BufferedImage getThumbnail(long datasetId, long imageId) throws Exception{
+
+        BufferedImage img = null;
+        ThumbnailStorePrx store = null;
+        ByteArrayInputStream stream = null;
+
+        try{
+
+            BrowseFacility browse = this.gateway.getFacility(BrowseFacility.class);
+            Collection<ImageData> images = browse.getImagesForDatasets(this.ctx, Arrays.asList(datasetId));
+
+            Iterator<ImageData> j = images.iterator();
+            ImageData image = null;
+            while (j.hasNext()) {
+                image = j.next();
+                if(image.getId() == imageId){
+                    break;
+                }
+            }
+
+            store = this.gateway.getThumbnailService(ctx);
+
+            PixelsData pixels = image.getDefaultPixels();
+            store.setPixelsId(pixels.getId());
+            byte[] array = store.getThumbnail(omero.rtypes.rint(96), omero.rtypes.rint(96));
+            stream = new ByteArrayInputStream(array);
+            img = ImageIO.read(stream);
+
+        }  catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (store != null) store.close();
+        }
+
+        return img;
+
     }
 
 }

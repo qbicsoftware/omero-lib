@@ -116,6 +116,37 @@ public class BasicOMEROClient {
         return this.projectMap;
     }
 
+    public HashMap<String, String> getProjectInfo(long projectId){
+
+        HashMap<String, String> projectInfo = new HashMap<String, String>();
+
+        try {
+
+            BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
+            Collection<ProjectData> projects = browse.getProjects(ctx);
+
+            Iterator<ProjectData> i = projects.iterator();
+            ProjectData project;
+            while (i.hasNext()) {
+                project = i.next();
+
+                if (project.getId() == projectId){
+
+                    projectInfo.put("name", project.getName());
+                    projectInfo.put("desc", project.getDescription());
+
+                    break;
+                }
+
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        return projectInfo;
+    }
+
     public HashMap<Long, String> getDatasets(long projectId) {
 
         HashMap<Long, String> datasetList = new HashMap<Long, String>();

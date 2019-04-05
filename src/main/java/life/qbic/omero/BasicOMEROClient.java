@@ -27,8 +27,8 @@ public class BasicOMEROClient {
     /** The security context.*/
     private SecurityContext ctx;
 
-    private String hostname = "134.2.183.129";
-    private int port = 4064;
+    private String hostname;
+    private int port;
 
     private String username;
     private String password;
@@ -36,10 +36,12 @@ public class BasicOMEROClient {
     private HashMap<Long, String> projectMap;
     private HashMap<Long, Set<DatasetData>> datasetMap;
 
-    public BasicOMEROClient(String username, String password) {
+    public BasicOMEROClient(String username, String password, String hostname, int port) {
 
         this.username = username;
         this.password = password;
+        this.hostname = hostname;
+        this.port = port;
 
 //        try {
 //

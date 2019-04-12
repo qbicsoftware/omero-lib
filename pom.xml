@@ -68,6 +68,7 @@
 		<dependency>
 			<groupId>omero</groupId>
 			<artifactId>blitz</artifactId>
+			<version>5.4.10-${ice.version}-b105</version>
 
 		</dependency>
 		<dependency>
@@ -79,11 +80,6 @@
 			<artifactId>formats-gpl</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>javax.json</groupId>
-			<artifactId>javax.json-api</artifactId>
-		</dependency>
-		
 	</dependencies>
 
 	<profiles>
@@ -125,7 +121,7 @@
 	</pluginRepositories>
 
 	<properties>
-		<omero.version>5.4.6-${ice.version}-b87</omero.version>
+		<omero.version>5.4.10-${ice.version}-b105</omero.version>
 		<bioformats.version>5.8.2</bioformats.version>
 	</properties>
 
@@ -182,12 +178,6 @@
 				<version>${bioformats.version}</version>
 			</dependency>
 
-			<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
-			<dependency>
-				<groupId>javax.json</groupId>
-				<artifactId>javax.json-api</artifactId>
-				<version>1.0</version>
-			</dependency>
 
 		</dependencies>
 	</dependencyManagement>

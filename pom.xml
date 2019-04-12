@@ -60,7 +60,6 @@
 			<url>https://repo.zeroc.com/nexus/content/repositories/releases/</url>
 		</repository>
 
-
 	</repositories>
 
 	<dependencies>
@@ -83,6 +82,7 @@
 	</dependencies>
 
 	<profiles>
+
 		<profile>
 			<id>ice35</id>
 			<activation>
@@ -94,6 +94,7 @@
 				<ice.version>ice35</ice.version>
 			</properties>
 		</profile>
+
 		<profile>
 			<id>ice36</id>
 			<activation>

@@ -81,6 +81,12 @@ public class BasicOMEROClient {
             this.connect(this.hostname, this.port, this.username, this.password);
         } catch (Exception e) {
             System.out.println(e);
+
+            System.out.println("++++++++++++++++++++++++++++++++++++++");
+            System.out.println(e.getLocalizedMessage());
+            System.out.println(e.getMessage());
+            System.out.println(e.toString());
+
         }
 
     }

@@ -14,11 +14,6 @@ import omero.model.*;
 import java.util.*;
 import java.io.ByteArrayInputStream;
 
-import java.security.Security;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import org.apache.commons.lang.StringUtils;
-
 
 
 /////////////////////////////////////////////////////
@@ -46,35 +41,6 @@ public class BasicOMEROClient {
         this.password = password;
         this.hostname = hostname;
         this.port = port;
-
-//        try {
-//
-//
-//            this.connect(this.hostname, this.port, username, password);
-//
-//            //Do something e.g. loading user's data.
-//            //Load the projects/datasets owned by the user currently logged in.
-//
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
-
-        final String property = "jdk.tls.disabledAlgorithms";
-        final String value = Security.getProperty(property);
-        if (StringUtils.isNotBlank(value)) {
-            final List<String> algorithms = new ArrayList<>();
-            boolean isChanged = false;
-            for (final String algorithm : Splitter.on(',').trimResults().split(value)) {
-                if ("anon".equals(algorithm.toLowerCase())) {
-                    isChanged = true;
-                } else {
-                    algorithms.add(algorithm);
-                }
-            }
-            if (isChanged) {
-                Security.setProperty(property, Joiner.on(", ").join(algorithms));
-            }
-        }
 
 
     }

@@ -142,9 +142,9 @@ public class BasicOMEROClient {
         return projectInfo;
     }
 
-    public HashMap<Long, String> getDatasets(long projectId) {
+    public HashMap<Long, HashMap<String, String>> getDatasets(long projectId) {
 
-        HashMap<Long, String> datasetList = new HashMap<Long, String>();
+        HashMap<Long, HashMap<String, String>> datasetList = new HashMap<Long, HashMap<String, String>>();
 
         Set<DatasetData> datasets = this.datasetMap.get(projectId);
 
@@ -152,7 +152,13 @@ public class BasicOMEROClient {
         DatasetData dataset;
         while(iterator.hasNext()) {
             dataset = iterator.next();
-            datasetList.put(dataset.getId(), dataset.getName());
+
+            HashMap<String, String> datasetInfo = new HashMap<String, String>();
+            datasetInfo.put("name", dataset.getName());
+            datasetInfo.put("desc", dataset.getDescription());
+
+            datasetList.put(dataset.getId(), datasetInfo);
+
         }
 
         return datasetList;

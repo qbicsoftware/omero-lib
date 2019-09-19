@@ -32,6 +32,8 @@ public class BasicOMEROClient {
     private String username;
     private String password;
 
+    private String sessionId;
+
     private HashMap<Long, String> projectMap;
     private HashMap<Long, Set<DatasetData>> datasetMap;
 
@@ -42,6 +44,7 @@ public class BasicOMEROClient {
         this.hostname = hostname;
         this.port = port;
 
+        this.sessionId = "";
 
     }
 
@@ -60,6 +63,8 @@ public class BasicOMEROClient {
 
         ExperimenterData user = gateway.connect(cred);
         this.ctx = new SecurityContext(user.getGroupId());
+
+        this.sessionId = gateway.getSessionId(user);
     }
 
     public void connect() {
@@ -76,6 +81,11 @@ public class BasicOMEROClient {
 
         }
 
+    }
+
+    public String getSessionId(){
+
+        return this.sessionId;
     }
 
     public void disconnect() {

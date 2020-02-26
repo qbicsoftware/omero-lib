@@ -88,17 +88,6 @@
 	</profiles>
 
 
-	<pluginRepositories>
-		<pluginRepository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>bintray-plugins</name>
-			<url>http://jcenter.bintray.com</url>
-		</pluginRepository>
-	</pluginRepositories>
-
 	<properties>
 		<omero.version>5.4.10-${ice.version}-b105</omero.version>
 		<bioformats.version>5.8.2</bioformats.version>

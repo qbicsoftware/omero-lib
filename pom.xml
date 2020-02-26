@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>life.qbic</groupId>
-		<artifactId>parent-pom</artifactId>
+		<artifactId>portal-parent-pom</artifactId>
 		<version>1.4.0</version>
 	</parent>
 	<groupId>life.qbic</groupId>

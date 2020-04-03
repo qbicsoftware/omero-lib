@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project 
+<project
 	xmlns="http://maven.apache.org/POM/4.0.0" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>life.qbic</groupId>
 		<artifactId>parent-pom</artifactId>
 		<version>2.2.0-SNAPSHOT</version>
 	</parent>
+
 	<groupId>life.qbic</groupId>
 	<artifactId>omero-client-lib</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
@@ -15,140 +17,26 @@
 	<url>http://github.com/qbicsoftware/omero-client-lib</url>
 	<description>Java-based library to connect to the OMERO server</description>
 	<packaging>jar</packaging>
-	<!-- we only need to tell maven where to find our parent pom and other QBiC dependencies -->
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>omero-gateway</artifactId>
+			<version>5.6.3</version>
+		</dependency>
+	</dependencies>
+
 	<repositories>
-
-
-		<!-- OMERO repositories -->
-
 		<repository>
 			<id>ome.maven</id>
-			<url>http://artifacts.openmicroscopy.org/artifactory/maven/</url>
+			<url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
 		</repository>
 		<repository>
 			<id>unidata-releases</id>
 			<name>unidata-releases</name>
 			<url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
 		</repository>
-		<repository>
-			<id>zeroc</id>
-			<name>zeroc</name>
-			<url>https://repo.zeroc.com/nexus/content/repositories/releases/</url>
-		</repository>
-
-
-
 	</repositories>
-
-	<dependencies>
-
-		<dependency>
-			<groupId>omero</groupId>
-			<artifactId>blitz</artifactId>
-			<version>5.4.10-${ice.version}-b105</version>
-
-		</dependency>
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-bsd</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-gpl</artifactId>
-		</dependency>
-
-	</dependencies>
-
-	<profiles>
-
-		<profile>
-			<id>ice35</id>
-			<activation>
-				<property>
-					<name>!ice</name>
-				</property>
-			</activation>
-			<properties>
-				<ice.version>ice35</ice.version>
-			</properties>
-		</profile>
-
-		<profile>
-			<id>ice36</id>
-			<activation>
-				<property>
-					<name>ice</name>
-					<value>36</value>
-				</property>
-			</activation>
-			<properties>
-				<ice.version>ice36</ice.version>
-			</properties>
-		</profile>
-	</profiles>
-
-
-	<properties>
-		<omero.version>5.4.10-${ice.version}-b105</omero.version>
-		<bioformats.version>5.8.2</bioformats.version>
-	</properties>
-
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>omero</groupId>
-				<artifactId>blitz</artifactId>
-				<version>${omero.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.springframework.ldap</groupId>
-						<artifactId>spring-ldap</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.hibernate</groupId>
-						<artifactId>hibernate-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>hsqldb</groupId>
-						<artifactId>hsqldb</artifactId>
-					</exclusion>
-
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-
-				</exclusions>
-			</dependency>
-			<!-- Override inherited value from blitz due to classifier -->
-			<dependency>
-				<groupId>org.springframework.ldap</groupId>
-				<artifactId>spring-ldap</artifactId>
-				<version>1.3.0.RELEASE</version>
-				<classifier>all</classifier>
-			</dependency>
-			<!-- Rather than use the specialized 4510 jar, use Final -->
-			<dependency>
-				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-core</artifactId>
-				<version>3.5.6-Final</version>
-			</dependency>
-			<!-- Using Bio-Formats official POMs rather than Ivy ones -->
-			<dependency>
-				<groupId>ome</groupId>
-				<artifactId>formats-gpl</artifactId>
-				<version>${bioformats.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>ome</groupId>
-				<artifactId>formats-bsd</artifactId>
-				<version>${bioformats.version}</version>
-			</dependency>
-
-
-		</dependencies>
-	</dependencyManagement>
-
 
 </project>

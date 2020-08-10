@@ -70,7 +70,7 @@
 		<dependency>
 			<groupId>omero</groupId>
 			<artifactId>blitz</artifactId>
-			<version>5.4.10-${ice.version}-b105</version>
+			<version>${omero.version}</version>
 
 		</dependency>
 		<dependency>
@@ -84,7 +84,7 @@
 
 	</dependencies>
 
-	<profiles>
+	<!-- profiles>
 
 		<profile>
 			<id>ice35</id>
@@ -110,11 +110,11 @@
 				<ice.version>ice36</ice.version>
 			</properties>
 		</profile>
-	</profiles>
+	</profiles-->
 
 
 	<properties>
-		<omero.version>5.4.10-${ice.version}-b105</omero.version>
+		<omero.version>5.4.10-ice36-b105</omero.version>
 		<bioformats.version>5.8.2</bioformats.version>
 	</properties>
 

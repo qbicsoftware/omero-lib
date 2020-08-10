@@ -102,7 +102,7 @@ public class BasicOMEROClient {
    * @throws DSAccessException
    * @throws ExecutionException
    */
-  public List<FileAnnotationData> fetchFileAnnostationDataForImage(long imageID)
+  public List<FileAnnotationData> fetchFileAnnotationDataForImage(long imageID)
       throws DSOutOfServiceException, DSAccessException, ExecutionException {
     List<FileAnnotationData> annotations = new ArrayList<>();
     for (AnnotationData d : loadAnnotationsForImage(imageID, FileAnnotationData.class)) {

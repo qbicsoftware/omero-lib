@@ -96,24 +96,26 @@ public class BasicOMEROClient {
   }
 
   /**
-   * Tries to build an image download link for a given imageID. null will be returned if the image
-   * can not be downloaded due to its format
+   * Tries to build an image download link for a given imageID. An exception will be thrown if the
+   * image can not be downloaded due to its format
    * 
    * @param imageID
    * @return URL String to download the image or null
-   * @throws ExecutionException
-   * @throws DSAccessException
-   * @throws DSOutOfServiceException
+   * @throws ExecutionException attempted task aborted with exception
+   * @throws DSAccessException data could not be fetched from the server
+   * @throws DSOutOfServiceException server connection was severed
    */
   public String getImageDownloadLink(long imageID)
       throws ExecutionException, DSOutOfServiceException, DSAccessException {
     String res = null;
     BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
     ImageData image = browse.getImage(this.ctx, imageID);
+    disconnect();
     if (image.getFormat() != null) {
       res = hostname + "/omero/webgateway/archived_files/download/" + imageID + "/";
+    } else {
+      throw new NullPointerException("No image format given. Image is not available for download.");
     }
-    disconnect();
     return res;
   }
 

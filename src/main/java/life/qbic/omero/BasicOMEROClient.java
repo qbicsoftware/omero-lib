@@ -107,7 +107,7 @@ public class BasicOMEROClient {
    * @throws NullPointerException format of the image is null and no download is possible
    */
   public String getImageDownloadLink(long imageID)
-      throws ExecutionException, DSOutOfServiceException, DSAccessException {
+      throws ExecutionException, DSOutOfServiceException, DSAccessException, NullPointerException {
     String res = null;
     BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
     ImageData image = browse.getImage(this.ctx, imageID);

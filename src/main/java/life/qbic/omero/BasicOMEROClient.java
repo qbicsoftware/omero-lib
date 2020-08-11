@@ -104,10 +104,9 @@ public class BasicOMEROClient {
    * @throws ExecutionException attempted task aborted with exception
    * @throws DSAccessException data could not be fetched from the server
    * @throws DSOutOfServiceException server connection was severed
-   * @throws NullPointerException format of the image is null and no download is possible
    */
   public String getImageDownloadLink(long imageID)
-      throws ExecutionException, DSOutOfServiceException, DSAccessException {
+      throws ExecutionException, DSOutOfServiceException, DSAccessException, NullPointerException {
     String res = null;
     BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
     ImageData image = browse.getImage(this.ctx, imageID);

@@ -12,14 +12,14 @@
 
 	<groupId>life.qbic</groupId>
 	<artifactId>omero-client-lib</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<name>OMERO client library</name>
 	<url>http://github.com/qbicsoftware/omero-client-lib</url>
 	<description>Java-based library to connect to the OMERO server</description>
 	<packaging>jar</packaging>
 
 	<repositories>
-		<!-- we only need to tell maven where to find our parent pom and other 
+		<!-- we only need to tell maven where to find our parent pom and other
 			QBiC dependencies -->
 		<repository>
 			<id>nexus-snapshots</id>
@@ -48,7 +48,6 @@
 			<url>https://qbic-repo.am10.uni-tuebingen.de/repository/maven-releases</url>
 		</repository>
 		<!-- OMERO repositories -->
-
 		<repository>
 			<id>ome.maven</id>
 			<url>http://artifacts.openmicroscopy.org/artifactory/maven/</url>
@@ -84,33 +83,6 @@
 
 	</dependencies>
 
-	<!-- profiles>
-
-		<profile>
-			<id>ice35</id>
-			<activation>
-				<property>
-					<name>!ice</name>
-				</property>
-			</activation>
-			<properties>
-				<ice.version>ice35</ice.version>
-			</properties>
-		</profile>
-
-		<profile>
-			<id>ice36</id>
-			<activation>
-				<property>
-					<name>ice</name>
-					<value>36</value>
-				</property>
-			</activation>
-			<properties>
-				<ice.version>ice36</ice.version>
-			</properties>
-		</profile>
-	</profiles-->
 
 
 	<properties>

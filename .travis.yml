@@ -1,7 +1,7 @@
 # Build script for Travis CI
 #
 
-# use xenial distribution
+# use xenial distro
 dist: xenial
 
 # no need to check for oracle's java
@@ -12,30 +12,36 @@ jdk: openjdk8
 cache:
   directories:
   - "$HOME/.m2/repository"
+  - "$HOME/.cache/pip"
+  - "$HOME/miniconda3"
 
 # as agreed in our SOP
 branches:
   only:
   - master
   - development
+  - /release.*/
+  - /patch.*/
+  - /hotfix.*/
+  - /^[vV]?\d+\.\d+\.\d+$/ # matches e.g., v1.2.3, 1.2.3, V1.2.3
 
 # added to make logs look cleaner, crisper, certified fresh
-before_install: unset _JAVA_OPTIONS 
+before_install: unset _JAVA_OPTIONS
 
-# speed up builds by telling Travis that we don't need any special "installation"
-install: true
-
+# dependencies for report generation (use cache to speed up builds)
+install:
+  - $HOME/miniconda3/bin/conda --version || ./.install-reports-dependencies.sh
 # check if we need to add a license file for Vaadin charts
 before_script: if [ "$VAADIN_CHARTS_LICENSE_CODE" != "" ]; then
                   echo "$VAADIN_CHARTS_LICENSE_CODE" > ~/.vaadin.charts.developer.license;
                fi;
 
 # as agreed in our SOP, build everything (don't deploy, just try to 'mvn install' locally, which covers all phases)
-script: mvn --activate-profiles !development-build,!release-build --settings .travis.settings.xml clean cobertura:cobertura install
+script: mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion}-SNAPSHOT versions:update-child-modules && mvn versions:commit &&
+        mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml clean install
 # upload code coverage report, generate maven site (javadocs, documentation, static code analysis, etc.)
 after_success: 
 - bash <(curl -s https://codecov.io/bash)
-- mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml site
 
 # upload to maven
 deploy:
@@ -53,15 +59,17 @@ deploy:
   # artifact will be installed in our testing instance if it is a .war file
 - skip_cleanup: true
   provider: script
-  script: mvn --quiet --activate-profiles !development-build,release-build --settings .travis.settings.xml deploy
+  script: mvn build-helper:parse-version versions:set -DnewVersion=$TRAVIS_TAG -DprocessAllModules && mvn versions:commit &&
+          mvn --quiet --activate-profiles !development-build,release-build --settings .travis.settings.xml deploy
   on:
-    branch: master
     condition: '"$TRAVIS_EVENT_TYPE" = "push"'
+    tags: true
 
-env:
-  global:
-    - secure: "GubWHnTtaft+EROZbU6+eAPA9grohYxHZ1dRO1Az/NMwPlPFXhaOQd22gxjwE518pb+QBHfg6kXnGzSl4LyGxOql/RiTpRXCnId7Q7aKITSeKKzgh/uobXY1vljEpPgag//4/fbJk5bYVZyo3B4J1OG65P9YF6KwNw1/FB9owGDSl8gercm+QxSAvA5yi0yJfOm+XAlUpwWuTnW2yIeup1slpsjEXg2p3LSMj6LwA41S7ysXd0cVrVtAgRviTSyAD1LTCMpLWrMV5Mwqn3cphVedzXJxJJRro1gztq3gQbHEkZVVT97sVZZPm80PJcsdyg177WzEiRN67u5J3TxISZJLzSd3co4r1gsc3ckyF0E8jvfP3RFRPOoiBlK83wvB6YED6gWz07nbhUY+kThE6V5iG2LB3w/blnrUDxtK7kQB7tbR0g5ltWQnICvHv6DAhjooJzBmNIIcZFLS3uiO96ZLQKBObNV3MX6U+I9+e7v47JGOVpHZCaYOIcnfFFfTMbSEywuizRYDckhP83iAeqUXgCdlJkbs/J4oHSNkkLNE+L+gB3R/KusDbUvUROejVLmEfRwzuDe7bh4vx3QbXqRFFFOt02THtkavoiAdvFzVwNTOfGVaHsaVLx0uMwWRAnx8qBmVMXC+SN8Kz8RJoxoPaG/TErvEWjku/mYxAsE="
-    - secure: "ECntPzE+udN2lsoH0DSlfyJSgrWKCM3PGKr0Md9dy2hVsyBV056DfDAwTavOXF94XDiw8vopEg9vSDjduw6PY0thA0XE0THgwvWaYtQeoTzx9LuBUmeRgvuWbJ59+8cl0r5kC8B9jZ7azLV9UklLWvGYlygurFQWUcWGMO9Mu1foppa9YN8XwbVfc35qJIbbgHyALtA+4oSJ5ScDR7YZi5mRoHB/962Bx5w9B0whJdZUxO80+b1fr0eS3uZXtTlAOykglpPhit1NfP5VXPeVFAFFwjbK5o56+/ZLfEiv8wSkjIaKy790A3+Xur252avBT2sxxu84o7U5tDEGCLdJrnHILtEp61gvfRiXPbC7IE763WhAdRASNOQX0820h/M1v5/qzfKlLhx60dQVlIhg7zA7h4gbFO68d/owebdaONdXGM0gM42ctbcRpBrzbHZ2Jyeghk6OevhuXZba6LNQ6+PWpAtwAG4fKmdf0W+6R+eFoY2M4FJUio2xxQ259AbI8yrHhDhNQkXruPpzoy49oC95V6j/2urRkxOK60wqByds/BBZvN3x8rSr6XX64M6KhE/c3yg2p4gGPzOVnJ0rWzQTcsTjxWJmeTSvK3eFPqUGrlUl8WsUYpbwFylWouh+mFtJyRMPPC3M8X4mFUoZdUSPMNFQOR1z1J0CxcCXLfs="
+# activate our conda environment, generate maven site and upload reports to gh-pages branch
+after_deploy:
+  - echo ". $HOME/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc && source ~/.bashrc && conda activate qbic-docs-build
+  - mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml site
+  - ./.generate-reports.py $TRAVIS_BRANCH $TRAVIS_REPO_SLUG "[skip travis] Updated gh-pages" "This commit was performed from travis-ci.com using a personal access key" "Build ID $TRAVIS_BUILD_ID" "Job ID TRAVIS_JOB_ID" "Branch $TRAVIS_BRANCH" "Log of this build found at $TRAVIS_JOB_WEB_URL"
 
 # change according to your needs, but we recommend to deactivate email notifications
 # for now, we configured Travis to send a notification to the #travis-ci channel 

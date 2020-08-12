@@ -156,17 +156,17 @@ public class BasicOMEROClient {
 
 
   /**
-   * render buffered image of image object in omero
+   * render buffered image of image object in Omero
    * 
-   * @param image
-   * @param zPLane
-   * @param tPlane
+   * @param image imageData object from Omero
+   * @param zPLane selected slide of the vertical axis of a 3D image, else 0
+   * @param tPlane selected time "plane" of a time series, else 0
    * @return
    * @throws ServerError
-   * @throws DSOutOfServiceException
+   * @throws DSOutOfServiceException interrupted or broken connection to the server
    * @throws IOException
    */
-  private BufferedImage render(ImageData image, int zPLane, int tPlane)
+  public BufferedImage renderImage(ImageData image, int zPlane, int tPlane)
       throws ServerError, DSOutOfServiceException, IOException {
 
     BufferedImage res = null;
@@ -186,8 +186,8 @@ public class BasicOMEROClient {
       // Now can interact with the rendering engine.
       proxy.setActive(0, Boolean.valueOf(false));
       PlaneDef pDef = new PlaneDef();
-      pDef.z = 30;
-      pDef.t = 0;
+      pDef.z = zPlane;
+      pDef.t = tPlane;
       pDef.slice = omero.romio.XY.value;
       // render the data uncompressed.
       int[] uncompressed = proxy.renderAsPackedInt(pDef);

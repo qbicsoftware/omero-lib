@@ -160,13 +160,13 @@ public class BasicOMEROClient {
    * 
    * @param image imageData object from Omero
    * @param zPLane selected slide of the vertical axis of a 3D image, else 0
-   * @param tPlane selected time "plane" of a time series, else 0
+   * @param timePoint selected time point of a time series, else 0
    * @return
    * @throws ServerError
    * @throws DSOutOfServiceException interrupted or broken connection to the server
    * @throws IOException
    */
-  public BufferedImage renderImage(ImageData image, int zPlane, int tPlane)
+  public BufferedImage renderImage(ImageData image, int zPlane, int timePoint)
       throws ServerError, DSOutOfServiceException, IOException {
 
     BufferedImage res = null;

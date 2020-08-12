@@ -95,7 +95,7 @@ public class BasicOMEROClient {
 
   /**
    * Returns any file annotations (information about attachments) of a given image
-   * 
+   *
    * @param imageID the ID of the image
    * @return A list of FileAnnotationData objects
    * @throws DSOutOfServiceException
@@ -113,7 +113,7 @@ public class BasicOMEROClient {
 
   /**
    * Returns any map annotation data (key value pairs of metadata) of a given image
-   * 
+   *
    * @param imageID the ID of the image
    * @return A list of MapAnnotationData objects
    * @throws DSOutOfServiceException
@@ -157,7 +157,7 @@ public class BasicOMEROClient {
 
   /**
    * render buffered image of image object in Omero
-   * 
+   *
    * @param image imageData object from Omero
    * @param zPLane selected slide of the vertical axis of a 3D image, else 0
    * @param timePoint selected time point of a time series, else 0
@@ -227,6 +227,43 @@ public class BasicOMEROClient {
 
   public void disconnect() {
     this.gateway.disconnect();
+  }
+
+  /**
+   * Tries to build an image download link for a given imageID. An exception will be thrown if the
+   * image can not be downloaded due to its format
+   *
+   * @param imageID
+   * @return URL String to download the image or null
+   * @throws ExecutionException attempted task aborted with exception
+   * @throws DSAccessException data could not be fetched from the server
+   * @throws DSOutOfServiceException server connection was severed
+   * @throws NullPointerException format of the image is null and no download is possible
+   */
+  public String getImageDownloadLink(long imageID)
+      throws ExecutionException, DSOutOfServiceException, DSAccessException, NullPointerException {
+    String res = null;
+    BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
+    ImageData image = browse.getImage(this.ctx, imageID);
+    disconnect();
+    if (image.getFormat() != null) {
+      res = hostname + "/omero/webgateway/archived_files/download/" + imageID + "/";
+    } else {
+      throw new NullPointerException("No image format given. Image is not available for download.");
+    }
+    return res;
+  }
+
+  /**
+   * Tries to build an image download link for a given annotation ID. No checks are performed if
+   * that ID belongs to a file.
+   *
+   * @param annotationID
+   * @return URL String to download the file
+   */
+  public String getAnnotationFileDownloadLink(long annotationID) {
+    String res = hostname + "/omero/webclient/annotation/" + annotationID;
+    return res;
   }
 
   public HashMap<Long, String> loadProjects() {

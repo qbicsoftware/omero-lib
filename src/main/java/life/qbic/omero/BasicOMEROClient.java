@@ -187,7 +187,7 @@ public class BasicOMEROClient {
       proxy.setActive(0, Boolean.valueOf(false));
       PlaneDef pDef = new PlaneDef();
       pDef.z = zPlane;
-      pDef.t = tPlane;
+      pDef.t = timePoint;
       pDef.slice = omero.romio.XY.value;
       // render the data uncompressed.
       int[] uncompressed = proxy.renderAsPackedInt(pDef);

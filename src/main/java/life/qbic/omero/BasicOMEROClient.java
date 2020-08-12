@@ -8,13 +8,20 @@ import omero.gateway.exception.DSOutOfServiceException;
 import omero.gateway.facility.BrowseFacility;
 import omero.gateway.facility.DataManagerFacility;
 import omero.gateway.facility.MetadataFacility;
+import omero.ServerError;
+import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
 import omero.gateway.model.*;
 import omero.log.SimpleLogger;
 import omero.model.*;
+import omero.romio.PlaneDef;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 
 
 
@@ -86,9 +93,136 @@ public class BasicOMEROClient {
 
   }
 
+  /**
+   * Returns any file annotations (information about attachments) of a given image
+   *
+   * @param imageID the ID of the image
+   * @return A list of FileAnnotationData objects
+   * @throws DSOutOfServiceException
+   * @throws DSAccessException
+   * @throws ExecutionException
+   */
+  public List<FileAnnotationData> fetchFileAnnotationDataForImage(long imageID)
+      throws DSOutOfServiceException, DSAccessException, ExecutionException {
+    List<FileAnnotationData> annotations = new ArrayList<>();
+    for (AnnotationData d : loadAnnotationsForImage(imageID, FileAnnotationData.class)) {
+      annotations.add((FileAnnotationData) d);
+    }
+    return annotations;
+  }
+
+  /**
+   * Returns any map annotation data (key value pairs of metadata) of a given image
+   *
+   * @param imageID the ID of the image
+   * @return A list of MapAnnotationData objects
+   * @throws DSOutOfServiceException
+   * @throws DSAccessException
+   * @throws ExecutionException
+   */
+  public List<MapAnnotationData> fetchMapAnnotationDataForImage(long imageID)
+      throws DSOutOfServiceException, DSAccessException, ExecutionException {
+    List<MapAnnotationData> annotations = new ArrayList<>();
+    for (AnnotationData d : loadAnnotationsForImage(imageID, MapAnnotationData.class)) {
+      annotations.add((MapAnnotationData) d);
+    }
+    return annotations;
+  }
+
+  private Collection<? extends AnnotationData> loadAnnotationsForImage(long imageID,
+      Class<? extends AnnotationData> type)
+      throws DSOutOfServiceException, DSAccessException, ExecutionException {
+    long userID = this.gateway.getLoggedInUser().getId();
+
+    BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
+    ImageData image = browse.getImage(this.ctx, imageID);
+
+    List<Long> userIds = new ArrayList<Long>();
+    userIds.add(userID);
+
+    List<Class<? extends AnnotationData>> types = new ArrayList<Class<? extends AnnotationData>>();
+    types.add(type);
+
+    MetadataFacility metadata = gateway.getFacility(MetadataFacility.class);
+    List<AnnotationData> annotations = metadata.getAnnotations(ctx, image, types, userIds);
+
+    disconnect();
+
+    if (annotations != null) {
+      return annotations;
+    }
+    return new ArrayList<>();
+  }
+
+
+  /**
+   * render buffered image of image object in Omero
+   *
+   * @param image imageData object from Omero
+   * @param zPLane selected slide of the vertical axis of a 3D image, else 0
+   * @param timePoint selected time point of a time series, else 0
+   * @return
+   * @throws ServerError
+   * @throws DSOutOfServiceException interrupted or broken connection to the server
+   * @throws IOException
+   */
+  public BufferedImage renderImage(ImageData image, int zPlane, int timePoint)
+      throws ServerError, DSOutOfServiceException, IOException {
+
+    BufferedImage res = null;
+
+    PixelsData pixels = image.getDefaultPixels();
+    long pixelsId = pixels.getId();
+    RenderingEnginePrx proxy = null;
+    proxy = gateway.getRenderingService(ctx, pixelsId);
+    ByteArrayInputStream stream = null;
+    try {
+      proxy.lookupPixels(pixelsId);
+      if (!(proxy.lookupRenderingDef(pixelsId))) {
+        proxy.resetDefaultSettings(true);
+        proxy.lookupRenderingDef(pixelsId);
+      }
+      proxy.load();
+      // Now can interact with the rendering engine.
+      proxy.setActive(0, Boolean.valueOf(false));
+      PlaneDef pDef = new PlaneDef();
+      pDef.z = zPlane;
+      pDef.t = timePoint;
+      pDef.slice = omero.romio.XY.value;
+      // render the data uncompressed.
+      int[] uncompressed = proxy.renderAsPackedInt(pDef);
+      byte[] compressed = proxy.renderCompressed(pDef);
+      // Create a buffered image
+      stream = new ByteArrayInputStream(compressed);
+
+      res = ImageIO.read(stream);
+    } finally {
+      proxy.close();
+      if (stream != null)
+        stream.close();
+    }
+    return res;
+  }
+
+  private Gateway getGateway() {
+    return gateway;
+  }
+
+  private SecurityContext getContext() {
+    return ctx;
+  }
+
   public String getSessionId() {
 
     return this.sessionId;
+  }
+
+  public Map<Long, String> getProjectMap() {
+    return projectMap;
+  }
+
+  public Map<Long, Set<DatasetData>> getDatasetMap() {
+    return datasetMap;
   }
 
   public void disconnect() {
@@ -98,7 +232,7 @@ public class BasicOMEROClient {
   /**
    * Tries to build an image download link for a given imageID. An exception will be thrown if the
    * image can not be downloaded due to its format
-   * 
+   *
    * @param imageID
    * @return URL String to download the image or null
    * @throws ExecutionException attempted task aborted with exception
@@ -123,7 +257,7 @@ public class BasicOMEROClient {
   /**
    * Tries to build an image download link for a given annotation ID. No checks are performed if
    * that ID belongs to a file.
-   * 
+   *
    * @param annotationID
    * @return URL String to download the file
    */

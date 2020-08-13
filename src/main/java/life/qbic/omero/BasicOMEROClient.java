@@ -119,7 +119,6 @@ public class BasicOMEROClient {
    * @return a List containing annotation data for the given image matching the desired class
    */
   private <T extends AnnotationData> List<T> loadAnnotationsForImage(long imageID, Class<T> type) {
-    long userID = this.gateway.getLoggedInUser().getId();
     ImageData image;
     List<AnnotationData> annotations;
 

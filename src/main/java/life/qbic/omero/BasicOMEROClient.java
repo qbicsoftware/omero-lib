@@ -149,7 +149,7 @@ public class BasicOMEROClient {
     }
     disconnect();
 
-    return annotations.stream().map(annotationData -> (T) annotationData).collect(Collectors.toList());
+return (annotations != null) ? annotations.stream().map(annotationData -> (T) annotationData).collect(Collectors.toList()) : new ArrayList<T>();
   }
 
   /**

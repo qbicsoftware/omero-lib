@@ -133,8 +133,6 @@ public class BasicOMEROClient {
       throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
 
-    List<Long> userIds = new ArrayList<>();
-    userIds.add(userID);
 
     List<Class<? extends AnnotationData>> types = new ArrayList<>();
     types.add(type);

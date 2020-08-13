@@ -1,5 +1,8 @@
 # Changelog for the omero client library
 
+## 1.2.0
+* Throws RuntimeExceptions instead of Checked exceptions
+
 ## 1.1.0 - 12-08-2020
 
 ### New Features

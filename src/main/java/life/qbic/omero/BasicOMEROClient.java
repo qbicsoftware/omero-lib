@@ -142,7 +142,7 @@ public class BasicOMEROClient {
 
     try {
       MetadataFacility metadata = gateway.getFacility(MetadataFacility.class);
-      annotations = metadata.getAnnotations(ctx, image, types, userIds);
+      annotations = metadata.getAnnotations(ctx, image, types, null);
     } catch (DSOutOfServiceException dsOutOfServiceException) {
       throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
     } catch (ExecutionException executionException) {

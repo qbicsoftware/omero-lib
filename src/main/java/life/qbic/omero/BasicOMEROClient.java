@@ -24,42 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
-/*   *<pre>
- *
- *  OMERO Specific Exceptions:
- *  ===============
- *   ServerError (root server exception)
- *    |
- *    |_ InternalException (server bug)
- *    |
- *    |_ ResourceError (non-recoverable)
- *    |  \_ NoProcessorAvailable
- *    |
- *    |_ ConcurrencyException (recoverable)
- *    |  |_ ConcurrentModification (data was changed)
- *    |  |_ OptimisticLockException (changed data conflicts)
- *    |  |_ LockTimeout (took too long to acquire lock)
- *    |  |_ TryAgain (some processing required before server is ready)
- *    |  \_ TooManyUsersException
- *    |     \_ DatabaseBusyException
- *    |
- *    |_ ApiUsageException (misuse of services)
- *    |   |_ OverUsageException (too much)
- *    |   |_ QueryException (bad query string)
- *    |   \_ ValidationException (bad data)
- *    |
- *    |_ SecurityViolation (some no-no)
- *    |   \_ GroupSecurityViolation
- *    |      |_ PermissionMismatchGroupSecurityViolation
- *    |      \_ ReadOnlyGroupSecurityViolation
- *    |
- *    \_SessionException
- *       |_ RemovedSessionException (accessing a non-extant session)
- *       |_ SessionTimeoutException (session timed out; not yet removed)
- *       \_ ShutdownInProgress      (session on this server will most likely be destroyed)
- *  </pre>
- */
-
 
 
 /////////////////////////////////////////////////////

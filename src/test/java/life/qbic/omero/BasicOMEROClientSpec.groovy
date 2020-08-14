@@ -3,11 +3,14 @@ package life.qbic.omero
 import spock.lang.Specification
 
 /**
- * <short description>
+ * <class short description - 1 Line!>
  *
- * <detailed description>
+ * <More detailed description - When to use, what it solves, etc.>
  *
- * @since: <versiontag>
+ * @author Sven Fillinger
+ * @since <versiontag>
  */
 class BasicOMEROClientSpec extends Specification {
+  def "GetImageDownloadLink"() {
+  }
 }

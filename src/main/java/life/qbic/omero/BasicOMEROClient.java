@@ -241,13 +241,13 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @return URL String to download the image or null
    */
   public String getImageDownloadLink(long imageID) {
-    String res = null;
+    String downloadLinkAddress;
     try {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
       ImageData image = browse.getImage(this.ctx, imageID);
       disconnect();
       if (image.getFormat() != null) {
-        res = "http://" + hostname + "/omero/webgateway/archived_files/download/" + imageID + "?server=1&bsession=" + this.sessionId;
+        downloadLinkAddress = "http://" + hostname + "/omero/webgateway/archived_files/download/" + imageID + "?server=1&bsession=" + this.sessionId;
       } else {
         throw new IllegalArgumentException("No image format given. Image is not available for download.");
       }
@@ -258,7 +258,7 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
     } catch (DSAccessException dsAccessException) {
       throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
-    return res;
+    return downloadLinkAddress;
   }
 
   /**

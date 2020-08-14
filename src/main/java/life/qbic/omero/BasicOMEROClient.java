@@ -247,7 +247,7 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
       ImageData image = browse.getImage(this.ctx, imageID);
       disconnect();
       if (image.getFormat() != null) {
-        res = hostname + "/omero/webgateway/archived_files/download/" + imageID + "/";
+        res = hostname + "/omero/webgateway/archived_files/download/" + imageID + "?server=1&bsession=" + this.sessionId;
       } else {
         throw new IllegalArgumentException("No image format given. Image is not available for download.");
       }

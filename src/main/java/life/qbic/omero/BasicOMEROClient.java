@@ -590,7 +590,7 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
             + hostname
             + "/omero/webclient/img_detail/"
             + imageId
-            + "?server="
+            + "/?server="
             + serverId
             + "&bsession="
             + sessionUuid;

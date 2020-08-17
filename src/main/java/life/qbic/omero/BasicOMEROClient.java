@@ -584,7 +584,7 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @param imageId the omero id of a selected image
    * @return an address at which the given image can be viewed using the omero web client
    */
-  public String imageViewerLink(long imageId) {
+  public String composeImageDetailAddress(long imageId) {
     int serverId = 1;
     return "http://"
             + hostname

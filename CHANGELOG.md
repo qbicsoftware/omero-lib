@@ -2,6 +2,9 @@
 
 ## 1.2.0
 * Throws RuntimeExceptions instead of Checked exceptions
+* Fetches session uuid from omero
+* Generates complete links for web image viewer
+* Generates complete links for web image download
 
 ## 1.1.0 - 12-08-2020
 

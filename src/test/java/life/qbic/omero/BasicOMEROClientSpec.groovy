@@ -1,5 +1,6 @@
 package life.qbic.omero
 
+
 import spock.lang.Specification
 
 /**
@@ -11,6 +12,13 @@ import spock.lang.Specification
  * @since <versiontag>
  */
 class BasicOMEROClientSpec extends Specification {
+
+  def "first test"() {
+    expect:
+    1 + 1 == 2
+  }
+
   def "GetImageDownloadLink"() {
+
   }
 }

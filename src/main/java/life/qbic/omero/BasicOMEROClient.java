@@ -21,10 +21,7 @@ import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-
-
 
 /////////////////////////////////////////////////////
 
@@ -294,8 +291,12 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
         this.datasetMap.put(id, project.getDatasets());
       }
 
-    } catch (Exception e) {
-      System.out.println(e);
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
 
     return this.projectMap;
@@ -322,11 +323,13 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
 
           break;
         }
-
       }
-
-    } catch (Exception e) {
-      System.out.println(e);
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
 
     return projectInfo;
@@ -448,14 +451,15 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
 
     data.setNameSpace(MapAnnotationData.NS_CLIENT_CREATED);
     try {
-
       DataManagerFacility fac = gateway.getFacility(DataManagerFacility.class);
       fac.attachAnnotation(ctx, data, new DatasetData(new DatasetI(datasetId, false)));
-
-    } catch (Exception e) {
-      System.out.println(e);
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
-
   }
 
   public HashMap<Long, String> getImages(long datasetId) {
@@ -463,7 +467,6 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
     HashMap<Long, String> imageList = new HashMap<Long, String>();
 
     try {
-
       BrowseFacility browse = this.gateway.getFacility(BrowseFacility.class);
       Collection<ImageData> images = browse.getImagesForDatasets(ctx, Arrays.asList(datasetId));
 
@@ -472,11 +475,13 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
       while (j.hasNext()) {
         image = j.next();
         imageList.put(image.getId(), image.getName());
-
       }
-
-    } catch (Exception e) {
-      System.out.println(e);
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
 
     return imageList;
@@ -531,8 +536,12 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
 
 
 
-    } catch (Exception e) {
-      System.out.println(e);
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
 
     return imageInfo;

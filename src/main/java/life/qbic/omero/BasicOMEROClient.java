@@ -579,6 +579,11 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
     return imageInfo;
   }
 
+  /**
+   * This method returns a http address at which the given image can be viewed using the omero web client.
+   * @param imageId the omero id of a selected image
+   * @return an address at which the given image can be viewed using the omero web client
+   */
   public String imageViewerLink(long imageId) {
     int serverId = 1;
     return "http://"

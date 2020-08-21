@@ -204,6 +204,11 @@ public class BasicOMEROClient {
     ImageData image;
     List<AnnotationData> annotations;
 
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     try {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
       image = browse.getImage(this.securityContext, imageID);
@@ -242,6 +247,11 @@ public class BasicOMEROClient {
    * @return a {@link BufferedImage} for the given {@link ImageData}
    */
   public BufferedImage renderImage(ImageData image, int zPlane, int timePoint) {
+
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     BufferedImage res;
 
@@ -308,6 +318,11 @@ public class BasicOMEROClient {
    * @return URL String to download the image or null
    */
   public String getImageDownloadLink(long imageID) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     String downloadLinkAddress;
     try {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
@@ -343,6 +358,11 @@ public class BasicOMEROClient {
    * @return URL String to download the file
    */
   public String getAnnotationFileDownloadLink(long annotationID) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     return "http://"
         + hostname
         + "/omero/webclient/annotation/"
@@ -354,6 +374,10 @@ public class BasicOMEROClient {
   }
 
   public HashMap<Long, String> loadProjects() {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     this.projectMap = new HashMap<Long, String>();
     this.datasetMap = new HashMap<Long, Set<DatasetData>>();
@@ -387,6 +411,10 @@ public class BasicOMEROClient {
   }
 
   public HashMap<String, String> getProjectInfo(long projectId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<String, String> projectInfo = new HashMap<String, String>();
 
@@ -420,6 +448,10 @@ public class BasicOMEROClient {
   }
 
   public HashMap<Long, HashMap<String, String>> getDatasets(long projectId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<Long, HashMap<String, String>> datasetList =
         new HashMap<Long, HashMap<String, String>>();
@@ -444,6 +476,10 @@ public class BasicOMEROClient {
   }
 
   public long createProject(String name, String desc) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     DataManagerFacility dm;
     try {
@@ -470,6 +506,10 @@ public class BasicOMEROClient {
   }
 
   public long createDataset(long projectId, String name, String desc) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     DataManagerFacility dm = null;
     try {
@@ -501,6 +541,10 @@ public class BasicOMEROClient {
   }
 
   public void addMapAnnotationToProject(long projectId, String key, String value) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     List<NamedValue> result = new ArrayList<NamedValue>();
     result.add(new NamedValue(key, value));
@@ -526,6 +570,10 @@ public class BasicOMEROClient {
   }
 
   public void addMapAnnotationToDataset(long datasetId, String key, String value) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     List<NamedValue> result = new ArrayList<NamedValue>();
     result.add(new NamedValue(key, value));
@@ -547,6 +595,10 @@ public class BasicOMEROClient {
   }
 
   public HashMap<Long, String> getImages(long datasetId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<Long, String> imageList = new HashMap<Long, String>();
 
@@ -572,6 +624,10 @@ public class BasicOMEROClient {
   }
 
   public HashMap<String, String> getImageInfo(long datasetId, long imageId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<String, String> imageInfo = new HashMap<String, String>();
 
@@ -637,6 +693,11 @@ public class BasicOMEROClient {
    * @return an address at which the given image can be viewed using the omero web client
    */
   public String composeImageDetailAddress(long imageId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     return "http://"
             + hostname
             + "/omero/webclient/img_detail/"
@@ -655,6 +716,10 @@ public class BasicOMEROClient {
    * @return
    */
   public ByteArrayInputStream getThumbnail(long datasetId, long imageId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     ThumbnailStorePrx store = null;
     ByteArrayInputStream imageByteStream = null;

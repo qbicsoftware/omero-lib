@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import omero.ServerError;
 import omero.api.ExporterPrx;
-import omero.api.IAdminPrx;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
 import omero.gateway.Gateway;
@@ -53,25 +51,30 @@ import static org.apache.lucene.store.BufferedIndexInput.BUFFER_SIZE;
 
 /////////////////////////////////////////////////////
 
+/**
+ * A client to handle operations on the OMERO server
+ *
+ * This client can connect to the omero server.
+ *
+ * @since: 1.0.0
+ */
 public class BasicOMEROClient {
 
   //////////////////
-  /** Reference to the gateway. */
-  private Gateway gateway;
-  /** The security context. */
+  private final String hostname;
+  private final int port;
+  private final String username;
+  private final String password;
+  private final Gateway gateway;
+  private final int serverId;
+  //////////////////
+  private String sessionId;
+  private String sessionUuid;
   private SecurityContext securityContext;
 
-  private String hostname;
-  private int port;
-
-  private String username;
-  private String password;
-
-  private String sessionId;
 
   private HashMap<Long, String> projectMap;
   private HashMap<Long, Set<DatasetData>> datasetMap;
-  private String sessionUuid;
 
   public BasicOMEROClient(String username, String password, String hostname, int port) {
 
@@ -79,41 +82,55 @@ public class BasicOMEROClient {
     this.password = password;
     this.hostname = hostname;
     this.port = port;
+    this.serverId = 1;
 
-    this.sessionId = "";
+    this.sessionId = null;
+    this.sessionUuid = null;
+    this.securityContext = null;
 
+    this.gateway = new Gateway(new SimpleLogger());
   }
 
   /**
-   * Connects the the omero gateway. Uses the experimenter data to update properties of this omero client instance.
+   * This method returns true if a connection to OMERO exists.
    *
-   * @param hostname
-   * @param port
-   * @param username
-   * @param password
-   * @see Gateway
-   * @see ome.system.EventContext
+   * @return true when a connection to the OMERO server exists. false otherwise
+   * @see Gateway#isConnected()
+   * @since 1.2.0
    */
-  private void connect(String hostname, int port, String username, String password) {
+  public boolean isConnected() {
+    if (sessionId != null && sessionUuid != null && securityContext != null && this.gateway.isConnected()) {
+      return true;
+    } else {
+      if (this.gateway.isConnected()) {
+        throw new IllegalStateException("Omero client is in an illegal connection state.");
+      } else {
+        return false;
+      }
+    }
+  }
 
-    this.gateway = new Gateway(new SimpleLogger());
-    LoginCredentials cred = new LoginCredentials();
-    cred.getServer().setHostname(hostname);
+  /**
+   * Connects with the provided username and password.
+   * Existing connections are severed in favor of the new connection.
+   * @param username The username to log into OMERO
+   * @param password a password associated to the given username
+   * @param hostname the OMERO hostname
+   * @param port the port at which the OMERO server can be reached
+   */
+  private void connect(String username, String password, String hostname, int port) {
 
-    if (port > 0) {
-      cred.getServer().setPort(port);
+    if (this.isConnected()) {
+      this.disconnect();
     }
 
-    cred.getUser().setUsername(username);
-    cred.getUser().setPassword(password);
+    LoginCredentials loginCredentials = new LoginCredentials(username, password, hostname, port);
 
     try {
-      ExperimenterData user = gateway.connect(cred);
+      ExperimenterData user = this.gateway.connect(loginCredentials);
       this.securityContext = new SecurityContext(user.getGroupId());
       this.sessionId = gateway.getSessionId(user);
-      IAdminPrx gatewayAdminService = gateway.getAdminService(securityContext);
-      this.sessionUuid = gatewayAdminService.getEventContext().sessionUuid;
-
+      this.sessionUuid = gateway.getAdminService(securityContext).getEventContext().sessionUuid;
     } catch (DSOutOfServiceException dsOutOfServiceException) {
       throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
     } catch (ServerError serverError) {
@@ -121,8 +138,43 @@ public class BasicOMEROClient {
     }
   }
 
+  /**
+   * Tries to connect to an existing session with provided uuid.
+   * If a connection to the desired session exists, nothing will be done.
+   * If a connection to another session exists, the connection will be closed and a new connection
+   * to the desired UUID will be established.
+   *
+   * @param sessionUuid the UUID of the session a connection should be established to
+   * @since 1.2.0
+   */
+  private void connect(String sessionUuid) {
+    if (this.isConnected()) {
+      try {
+        if (!this.gateway
+            .getAdminService(securityContext)
+            .getEventContext()
+            .sessionUuid
+            .equals(sessionUuid)) {
+          return;
+        }
+      } catch (ServerError | DSOutOfServiceException exception) {
+        throw new RuntimeException("Reconnecting failed. Keeping current connection.", exception);
+      }
+    }
+    this.disconnect();
+    this.connect(sessionUuid, "", this.hostname, this.port);
+  }
+
+  /**
+   * Connects to the omero gateway.
+   *
+   * @see Gateway
+   */
   public void connect() {
-      this.connect(this.hostname, this.port, this.username, this.password);
+    if (this.isConnected()) {
+      return;
+    }
+    this.connect(this.username, this.password, this.hostname, this.port);
   }
 
   /**
@@ -155,6 +207,11 @@ public class BasicOMEROClient {
     ImageData image;
     List<AnnotationData> annotations;
 
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     try {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
       image = browse.getImage(this.securityContext, imageID);
@@ -180,9 +237,8 @@ public class BasicOMEROClient {
     } catch (DSAccessException dsAccessException) {
       throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
-    disconnect();
 
-return (annotations != null) ? annotations.stream().map(annotationData -> (T) annotationData).collect(Collectors.toList()) : new ArrayList<T>();
+    return (annotations != null) ? annotations.stream().map(annotationData -> (T) annotationData).collect(Collectors.toList()) : new ArrayList<T>();
   }
 
   /**
@@ -194,6 +250,11 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @return a {@link BufferedImage} for the given {@link ImageData}
    */
   public BufferedImage renderImage(ImageData image, int zPlane, int timePoint) {
+
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     BufferedImage res;
 
@@ -241,28 +302,15 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
     return res;
   }
 
-  private Gateway getGateway() {
-    return gateway;
-  }
-
-  private SecurityContext getContext() {
-    return securityContext;
-  }
-
-  public String getSessionId() {
-    return this.sessionId;
-  }
-
-  public Map<Long, String> getProjectMap() {
-    return projectMap;
-  }
-
-  public Map<Long, Set<DatasetData>> getDatasetMap() {
-    return datasetMap;
-  }
-
+  /**
+   * This method closes the current connection and invalidates the corresponding OMERO session.
+   * @see Gateway#disconnect()
+   */
   public void disconnect() {
     this.gateway.disconnect();
+    this.sessionId = null;
+    this.sessionUuid = null;
+    this.securityContext = null;
   }
 
   /**
@@ -273,13 +321,25 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @return URL String to download the image or null
    */
   public String getImageDownloadLink(long imageID) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     String downloadLinkAddress;
     try {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
       ImageData image = browse.getImage(this.securityContext, imageID);
-      disconnect();
       if (image.getFormat() != null) {
-        downloadLinkAddress = "http://" + hostname + "/omero/webgateway/archived_files/download/" + imageID + "?server=1&bsession=" + sessionUuid;
+        downloadLinkAddress =
+            "http://"
+                + hostname
+                + "/omero/webgateway/archived_files/download/"
+                + imageID
+                + "?server="
+                + serverId
+                + "&bsession="
+                + sessionUuid;
       } else {
         throw new IllegalArgumentException("No image format given. Image is not available for download.");
       }
@@ -301,10 +361,26 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @return URL String to download the file
    */
   public String getAnnotationFileDownloadLink(long annotationID) {
-    return hostname + "/omero/webclient/annotation/" + annotationID;
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
+    return "http://"
+        + hostname
+        + "/omero/webclient/annotation/"
+        + annotationID
+        + "?server="
+        + serverId
+        + "&bsession="
+        + sessionUuid;
   }
 
   public HashMap<Long, String> loadProjects() {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     this.projectMap = new HashMap<Long, String>();
     this.datasetMap = new HashMap<Long, Set<DatasetData>>();
@@ -338,6 +414,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public HashMap<String, String> getProjectInfo(long projectId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<String, String> projectInfo = new HashMap<String, String>();
 
@@ -371,6 +451,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public HashMap<Long, HashMap<String, String>> getDatasets(long projectId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<Long, HashMap<String, String>> datasetList =
         new HashMap<Long, HashMap<String, String>>();
@@ -395,6 +479,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public long createProject(String name, String desc) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     DataManagerFacility dm;
     try {
@@ -421,6 +509,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public long createDataset(long projectId, String name, String desc) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     DataManagerFacility dm = null;
     try {
@@ -452,6 +544,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public void addMapAnnotationToProject(long projectId, String key, String value) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     List<NamedValue> result = new ArrayList<NamedValue>();
     result.add(new NamedValue(key, value));
@@ -477,6 +573,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public void addMapAnnotationToDataset(long datasetId, String key, String value) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     List<NamedValue> result = new ArrayList<NamedValue>();
     result.add(new NamedValue(key, value));
@@ -498,6 +598,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public HashMap<Long, String> getImages(long datasetId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<Long, String> imageList = new HashMap<Long, String>();
 
@@ -523,6 +627,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
   }
 
   public HashMap<String, String> getImageInfo(long datasetId, long imageId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     HashMap<String, String> imageInfo = new HashMap<String, String>();
 
@@ -588,7 +696,11 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @return an address at which the given image can be viewed using the omero web client
    */
   public String composeImageDetailAddress(long imageId) {
-    int serverId = 1;
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     return "http://"
             + hostname
             + "/omero/webclient/img_detail/"
@@ -607,6 +719,10 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
    * @return
    */
   public ByteArrayInputStream getThumbnail(long datasetId, long imageId) {
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
 
     ThumbnailStorePrx store = null;
     ByteArrayInputStream imageByteStream = null;
@@ -694,4 +810,14 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
     return generatedTiff.toPath();
   }
 
+  /**
+   * The destructor has to make sure to disconnect from the OMERO server and close the session.
+   * @throws Throwable
+   * @since 1.2.0
+   */
+  @Override
+  protected void finalize() throws Throwable {
+    this.disconnect();
+    super.finalize();
+  }
 }

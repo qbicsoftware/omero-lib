@@ -775,6 +775,11 @@ public class BasicOMEROClient {
    * @return path to temporary file
    */
   public Path generateOmeTiff(long imageID){
+    // we need to be connected to OMERO otherwise the Gateway cannot retrieve information
+    if (!this.isConnected()){
+      connect();
+    }
+
     File generatedTiff = null;
 
     try {

@@ -5,6 +5,8 @@
 * Fetches session uuid from omero
 * Generates complete links for web image viewer
 * Generates complete links for web image download
+* BasicOMEROClient always holds 1 session at most
+* BasicOMEROClient can generate `.ome.tiff` images
 
 ## 1.1.0 - 12-08-2020
 

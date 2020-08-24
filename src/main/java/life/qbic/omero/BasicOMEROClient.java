@@ -1,7 +1,11 @@
 package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,8 +50,6 @@ import omero.model.ProjectDatasetLink;
 import omero.model.ProjectDatasetLinkI;
 import omero.model.ProjectI;
 import omero.romio.PlaneDef;
-
-import static org.apache.lucene.store.BufferedIndexInput.BUFFER_SIZE;
 
 /////////////////////////////////////////////////////
 
@@ -779,6 +781,7 @@ public class BasicOMEROClient {
     if (!this.isConnected()){
       connect();
     }
+    final int BUFFER_SIZE = 1024 * 1024;
 
     File generatedTiff = null;
 
@@ -787,25 +790,23 @@ public class BasicOMEROClient {
     } catch (IOException ioException) {
       throw new RuntimeException("Could not generate temporary file for image "+imageID,ioException);
     }
+
     try{
-      ExporterPrx exp = gateway.getExporterService(securityContext);
-      exp.addImage(imageID);
-      exp.generateTiff();
-      //todo change
-      System.out.println(generatedTiff.getAbsolutePath());
+      ExporterPrx exporterService = gateway.getExporterService(securityContext);
+      exporterService.addImage(imageID);
+      long fileLength = exporterService.generateTiff();
 
-      FileOutputStream fos = new FileOutputStream(generatedTiff);
-      long offset = 0;
-      int readLength = BUFFER_SIZE;
+      FileOutputStream fileOutputStream = new FileOutputStream(generatedTiff);
 
-      while (readLength == BUFFER_SIZE) {
-        byte[] buf = exp.read(offset,  BUFFER_SIZE);
-        fos.write(buf);
-        readLength = buf.length;
-        offset += readLength;
+      int bytesRead = 0;
+      while (bytesRead < fileLength) {
+        byte[] currentImageSlice = exporterService.read(bytesRead, BUFFER_SIZE);
+        fileOutputStream.write(currentImageSlice);
+        bytesRead += currentImageSlice.length;
       }
-      System.out.println("finished creating tiff without error");
-      exp.close();
+
+      fileOutputStream.close();
+      exporterService.close();
 
     }catch(ServerError | DSOutOfServiceException | FileNotFoundException exception){
       throw new RuntimeException("Omero could not create the ome tiff for image "+imageID, exception);

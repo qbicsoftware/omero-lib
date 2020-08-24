@@ -1,8 +1,8 @@
 package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import omero.ServerError;
+import omero.api.ExporterPrx;
 import omero.api.IAdminPrx;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
@@ -47,6 +48,8 @@ import omero.model.ProjectDatasetLink;
 import omero.model.ProjectDatasetLinkI;
 import omero.model.ProjectI;
 import omero.romio.PlaneDef;
+
+import static org.apache.lucene.store.BufferedIndexInput.BUFFER_SIZE;
 
 /////////////////////////////////////////////////////
 
@@ -646,6 +649,49 @@ return (annotations != null) ? annotations.stream().map(annotationData -> (T) an
 
     return imageByteStream;
 
+  }
+
+  /**
+   * Generates the ome-tiff file for a given file ID and stores it to the specified path
+   *
+   * @param imageID to specify the image for which the
+   *
+   * @return path to temporary file
+   */
+  public Path generateOmeTiff(long imageID){
+    File generatedTiff = null;
+
+    try {
+      generatedTiff = File.createTempFile("generated_"+imageID+"_","ome.tiff");
+    } catch (IOException ioException) {
+      throw new RuntimeException("Could not generate temporary file for image "+imageID,ioException);
+    }
+    try{
+      ExporterPrx exp = gateway.getExporterService(securityContext);
+      exp.addImage(imageID);
+      exp.generateTiff();
+      //todo change
+      System.out.println(generatedTiff.getAbsolutePath());
+
+      FileOutputStream fos = new FileOutputStream(generatedTiff);
+      long offset = 0;
+      int readLength = BUFFER_SIZE;
+
+      while (readLength == BUFFER_SIZE) {
+        byte[] buf = exp.read(offset,  BUFFER_SIZE);
+        fos.write(buf);
+        readLength = buf.length;
+        offset += readLength;
+      }
+      System.out.println("finished creating tiff without error");
+      exp.close();
+
+    }catch(ServerError | DSOutOfServiceException | FileNotFoundException exception){
+      throw new RuntimeException("Omero could not create the ome tiff for image "+imageID, exception);
+    } catch (IOException ioException) {
+      throw new RuntimeException("Could not write ome.tiff to temporary file for image "+imageID,ioException);
+    }
+    return generatedTiff.toPath();
   }
 
 }

@@ -783,7 +783,7 @@ public class BasicOMEROClient {
     File generatedTiff = null;
 
     try {
-      generatedTiff = File.createTempFile("generated_"+imageID+"_","ome.tiff");
+      generatedTiff = File.createTempFile("generated_"+imageID+"_",".ome.tiff");
     } catch (IOException ioException) {
       throw new RuntimeException("Could not generate temporary file for image "+imageID,ioException);
     }

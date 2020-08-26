@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+
+import loci.poi.util.TempFile;
 import ome.xml.model.FileAnnotation;
 import omero.ServerError;
 import omero.api.ITypesPrx;
@@ -330,46 +332,46 @@ public class BasicOMEROClient {
    * @param imageId the omero ID for the requested image
    * @return a filepath to a temporary file containing a copy
    */
-  public Path downloadOmeTiff(long imageId) {
+  public String downloadOmeTiff(long imageId) throws IOException {
     if (!this.isConnected()) {
       this.connect();
     }
-
-
+    String imagePath = "";
     try {
-      final String desiredFormat = "OMETiff";
+      final String omeTiffFormat = "OMETiff";
       // find image
       BrowseFacility browser = this.gateway.getFacility(BrowseFacility.class);
       ImageData imageData = browser.getImage(securityContext, imageId);
       // The format .ome.tiff always is expected to be present otherwise exception
-      if (imageData.getFormat().equals(desiredFormat)) {
+      if (imageData.getFormat().equals(omeTiffFormat)) {
         // the given imagedata has the desired format
-        //TODO get the filepath
+        imagePath = getImageDownloadLink(imageId);
       } else {
         // We want to always provide an ome tiff.
+
         // Every image should have an attachment/annotation that contains a corresponding .ome.tiff
         List<FileAnnotationData> fileAnnotations = fetchFileAnnotationDataForImage(imageId);
         for (FileAnnotationData fileAnnotation : fileAnnotations) {
-          if (fileAnnotation.getFileFormat().equals(desiredFormat)) {
+          System.out.println("iterating through annotations " + fileAnnotation.getFileID());
+          if (fileAnnotation.getFileFormat().equals(omeTiffFormat) || fileAnnotation.getFileName().equals("Batch_Image_Export.zip")) {
             // we found an annotation with the desired format
-            //TODO provide file id
+            imagePath = getAnnotationFileDownloadLink(fileAnnotation.getId());
+            System.out.println(imagePath);
             break;
           } else {
             // we don't have a file annotation with the desired format
+            imagePath = getImageDownloadLink(imageId); //just download the image in any format it is stored?
             //TODO decide what to do
           }
         }
-        //TODO use the RawFileStore to obtain the fileAnnotation.getFileID() file.
-        System.out.println("Finished searching for image with format " + desiredFormat);
+        System.out.println("Finished searching for image with format " + omeTiffFormat);
       }
-    } catch (DSOutOfServiceException | ExecutionException | DSAccessException | ServerError e) {
-      //TODO throw proper Exceptions
-      e.printStackTrace();
+    } catch (DSOutOfServiceException | ExecutionException | DSAccessException e) {
+      throw new RuntimeException("The file could not be downloaded",e);
     }
-    // store image to temp file
-    // return temp file location
-    return Paths.get("/");
+    return imagePath;
   }
+
 
   /**
    * Tries to build an image download link for a given imageID. An exception will be thrown if the

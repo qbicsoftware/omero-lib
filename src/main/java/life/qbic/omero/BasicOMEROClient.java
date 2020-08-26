@@ -1,8 +1,14 @@
 package life.qbic.omero;
 
+import com.beust.jcommander.converters.FileConverter;
+import edu.umd.cs.findbugs.ba.AnnotationEnumeration;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,8 +21,13 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+import ome.xml.model.FileAnnotation;
 import omero.ServerError;
+import omero.api.ITypesPrx;
+import omero.api.RawFileStore;
+import omero.api.RawFileStorePrx;
 import omero.api.RenderingEnginePrx;
+import omero.api.SearchPrx;
 import omero.api.ThumbnailStorePrx;
 import omero.gateway.Gateway;
 import omero.gateway.LoginCredentials;
@@ -31,15 +42,19 @@ import omero.gateway.model.ChannelData;
 import omero.gateway.model.DatasetData;
 import omero.gateway.model.ExperimenterData;
 import omero.gateway.model.FileAnnotationData;
+import omero.gateway.model.FileData;
 import omero.gateway.model.ImageData;
 import omero.gateway.model.MapAnnotationData;
 import omero.gateway.model.PixelsData;
 import omero.gateway.model.ProjectData;
 import omero.log.SimpleLogger;
+import omero.model.Annotation;
 import omero.model.Dataset;
 import omero.model.DatasetI;
 import omero.model.IObject;
+import omero.model.Image;
 import omero.model.NamedValue;
+import omero.model.OriginalFile;
 import omero.model.Project;
 import omero.model.ProjectDatasetLink;
 import omero.model.ProjectDatasetLinkI;
@@ -308,6 +323,52 @@ public class BasicOMEROClient {
     this.sessionId = null;
     this.sessionUuid = null;
     this.securityContext = null;
+  }
+
+  /**
+   * Returns a filepath to a temporary copy of the requested image file.
+   * @param imageId the omero ID for the requested image
+   * @return a filepath to a temporary file containing a copy
+   */
+  public Path downloadOmeTiff(long imageId) {
+    if (!this.isConnected()) {
+      this.connect();
+    }
+
+
+    try {
+      final String desiredFormat = "OMETiff";
+      // find image
+      BrowseFacility browser = this.gateway.getFacility(BrowseFacility.class);
+      ImageData imageData = browser.getImage(securityContext, imageId);
+      // The format .ome.tiff always is expected to be present otherwise exception
+      if (imageData.getFormat().equals(desiredFormat)) {
+        // the given imagedata has the desired format
+        //TODO get the filepath
+      } else {
+        // We want to always provide an ome tiff.
+        // Every image should have an attachment/annotation that contains a corresponding .ome.tiff
+        List<FileAnnotationData> fileAnnotations = fetchFileAnnotationDataForImage(imageId);
+        for (FileAnnotationData fileAnnotation : fileAnnotations) {
+          if (fileAnnotation.getFileFormat().equals(desiredFormat)) {
+            // we found an annotation with the desired format
+            //TODO provide file id
+            break;
+          } else {
+            // we don't have a file annotation with the desired format
+            //TODO decide what to do
+          }
+        }
+        //TODO use the RawFileStore to obtain the fileAnnotation.getFileID() file.
+        System.out.println("Finished searching for image with format " + desiredFormat);
+      }
+    } catch (DSOutOfServiceException | ExecutionException | DSAccessException | ServerError e) {
+      //TODO throw proper Exceptions
+      e.printStackTrace();
+    }
+    // store image to temp file
+    // return temp file location
+    return Paths.get("/");
   }
 
   /**
@@ -761,7 +822,6 @@ public class BasicOMEROClient {
     }
 
     return imageByteStream;
-
   }
 
   /**

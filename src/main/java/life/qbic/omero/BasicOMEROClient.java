@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+import life.qbic.datamodel.dtos.imaging.Instrument;
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
@@ -763,6 +764,20 @@ public class BasicOMEROClient {
     return imageByteStream;
 
   }
+
+  /**
+   * Associates instrument metadata with an existing image in the OMERO server.
+   * @param instrument
+   * @param imageId
+   */
+  public void associateInstrumentWithImage(Instrument instrument, Long imageId) {
+    // TODO implement
+    // 1. Check if an image with the id is in OMERO. Throw a runtime exception if not
+    // 2. Use the instrument metadata and store them accordingly next to the image in OMERO.
+    // Throw a runtime exception if anything goes wrong during this process
+    // 3. Enjoy coding!
+  }
+
 
   /**
    * The destructor has to make sure to disconnect from the OMERO server and close the session.

@@ -328,9 +328,11 @@ public class BasicOMEROClient {
   }
 
   /**
-   * Returns a filepath to a temporary copy of the requested image file.
+   * Returns a filepath to the requested image file in ome.tiff format. If no ome.tiff is
+   * available the path to the tiff of the image will be returned
+   *
    * @param imageId the omero ID for the requested image
-   * @return a filepath to a temporary file containing a copy
+   * @return a filepath to the ome.tiff of an image
    */
   public String downloadOmeTiff(long imageId) throws IOException {
     if (!this.isConnected()) {

@@ -797,7 +797,7 @@ public class BasicOMEROClient {
     mapAnnotationContent.add(new NamedValue("model", instrument.getModel()));
     mapAnnotationContent.add(new NamedValue("serialNumber", instrument.getSerialNumber()));
     mapAnnotationContent.add(new NamedValue("type", instrument.getType()));
-    mapAnnotationContent.add(new NamedValue("hardware", instrument.getHardware().toString());
+    mapAnnotationContent.add(new NamedValue("hardware", instrument.getHardware().toString()));
     mapAnnotationContent.add(new NamedValue("location", instrument.getLocation().toString()));
 
     MapAnnotationData annotationData = new MapAnnotationData();

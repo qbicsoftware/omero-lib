@@ -16,6 +16,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import life.qbic.datamodel.dtos.imaging.Instrument;
+import life.qbic.datamodel.dtos.imaging.Location;
+import life.qbic.datamodel.dtos.imaging.parameters.ImagingHardware;
+import life.qbic.datamodel.people.Address;
 import ome.model.annotations.MapAnnotation;
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
@@ -768,8 +771,8 @@ public class BasicOMEROClient {
 
   /**
    * Associates instrument metadata with an existing image in the OMERO server.
-   * @param instrument
-   * @param imageId
+   * @param instrument containing information to be associated with the image
+   * @param imageId ID of the image that will be annotated
    */
   public void associateInstrumentWithImage(Instrument instrument, Long imageId) {
     if (!isConnected()) {
@@ -793,12 +796,20 @@ public class BasicOMEROClient {
     }
     // 2. Use the instrument metadata and store them accordingly next to the image in OMERO.
     List<NamedValue> mapAnnotationContent = new ArrayList<>();
+    ImagingHardware instrumentHardware = instrument.getHardware();
+    Location instrumentLocation = instrument.getLocation();
+    Address instrumentLocationAddress = instrumentLocation.getAddress();
+    mapAnnotationContent.add(new NamedValue("hardware.detector.type", instrumentHardware.getDetector().getType()));
+    mapAnnotationContent.add(new NamedValue("hardware.objective", instrumentHardware.getObjective()));
     mapAnnotationContent.add(new NamedValue("manufacturer", instrument.getManufacturer()));
+    mapAnnotationContent.add(new NamedValue("location.address.affiliation", instrumentLocationAddress.getAffiliation()));
+    mapAnnotationContent.add(new NamedValue("location.address.country", instrumentLocationAddress.getCountry()));
+    mapAnnotationContent.add(new NamedValue("location.address.street", instrumentLocationAddress.getStreet()));
+    mapAnnotationContent.add(new NamedValue("location.address.zipCode", instrumentLocationAddress.getZipCode().toString()));
+    mapAnnotationContent.add(new NamedValue("location.roomId", instrumentLocation.getRoomId()));
     mapAnnotationContent.add(new NamedValue("model", instrument.getModel()));
     mapAnnotationContent.add(new NamedValue("serialNumber", instrument.getSerialNumber()));
     mapAnnotationContent.add(new NamedValue("type", instrument.getType()));
-    mapAnnotationContent.add(new NamedValue("hardware", instrument.getHardware().toString()));
-    mapAnnotationContent.add(new NamedValue("location", instrument.getLocation().toString()));
 
     MapAnnotationData annotationData = new MapAnnotationData();
     annotationData.setContent(mapAnnotationContent);

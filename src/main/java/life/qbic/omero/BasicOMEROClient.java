@@ -352,24 +352,51 @@ public class BasicOMEROClient {
   }
 
   /**
+   * This method returns a link to download an OME TIFF file for the given image id
    *
-   * @param imageId
-   * @return
+   * @param imageId the image for which an OME TIFF should be downloaded
+   * @return a link to download the OME TIFF corresponding to the image id
+   *
+   * @see <a href="https://www-legacy.openmicroscopy.org/site/products/ome-tiff">OME-TIFF file format</a>
    */
   public String downloadOmeTiff(long imageId) {
-    //todo implement (see downloadOmeTiff in branch image-download)
-    return null;
+    if (!this.isConnected()) {
+      this.connect();
+    }
+
+    final String desiredFormat = "OMETiff";
+    try {
+      BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
+      ImageData imageData = browseFacility.getImage(securityContext, imageId);
+      if (imageData.getFormat().equals(desiredFormat)) {
+        return getImageDownloadLink(imageId);
+      } else {
+        Long annotationId = findFileAnnotation(imageId, desiredFormat);
+        if (annotationId == null) {
+          File omeTiffFile = generateOmeTiff(imageId);
+          annotationId = createFileAnnotation(imageId, omeTiffFile);
+        }
+        return getAnnotationFileDownloadLink(annotationId);
+      }
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
+    }
   }
 
   /**
+   * This method searches for file annotations with the given file format
    *
-   * @param imageId
-   * @param fileFormat
-   * @return
+   * @param imageId the image id of the image that provides the annotations
+   * @param fileFormat the format of the file annotation to be found
+   * @return the annotation Id of the first annotation matching the file format, null if nothing found
    */
-  private long findFileAnnotation(long imageId, String fileFormat) {
+  private Long findFileAnnotation(long imageId, String fileFormat) {
     //todo implement (see downloadOmeTiff in branch image-download)
-    return 0;
+    return null;
   }
 
   private File generateOmeTiff(long imageId) {

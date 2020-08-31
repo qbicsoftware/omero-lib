@@ -1,9 +1,7 @@
 package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import omero.ServerError;
+import omero.api.ExporterPrx;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
 import omero.gateway.Gateway;
@@ -404,9 +403,49 @@ public class BasicOMEROClient {
     return null;
   }
 
+  /**
+   * Generate the ome.tiff file from a given image id
+   *
+   * @param imageId to define the image for which
+   * @return
+   */
   private File generateOmeTiff(long imageId) {
-    //todo implement (see generateOmeTiff branch)
-    return null;
+    if (!this.isConnected()) {
+      connect();
+    }
+    final int BUFFER_SIZE = 1024 * 1024;
+
+    File generatedTiff = null;
+
+    try {
+      generatedTiff = File.createTempFile("generated_" + imageId + "_",".ome.tiff");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    try {
+      ExporterPrx exporterService = gateway.getExporterService(securityContext);
+      exporterService.addImage(imageId);
+      long fileLength = exporterService.generateTiff();
+
+      FileOutputStream fileOutputStream = new FileOutputStream(generatedTiff);
+
+      int bytesRead = 0;
+      while (bytesRead < fileLength) {
+        byte[] currentImageSlice = exporterService.read(bytesRead, BUFFER_SIZE);
+        fileOutputStream.write(currentImageSlice);
+        bytesRead += currentImageSlice.length;
+      }
+
+      fileOutputStream.close();
+      exporterService.close();
+
+    } catch (ServerError | DSOutOfServiceException | FileNotFoundException exception) {
+      throw new RuntimeException("Omero could not create the ome tiff for image " + imageId, exception);
+    } catch (IOException ioException) {
+      throw new RuntimeException("Could not write ome.tiff to temporary file for image " + imageId, ioException);
+    }
+    return generatedTiff;
   }
 
 

@@ -2,6 +2,7 @@ package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -348,6 +349,38 @@ public class BasicOMEROClient {
       throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
     return downloadLinkAddress;
+  }
+
+  /**
+   *
+   * @param imageId
+   * @return
+   */
+  public String downloadOmeTiff(long imageId) {
+    //todo implement (see downloadOmeTiff in branch image-download)
+    return null;
+  }
+
+  /**
+   *
+   * @param imageId
+   * @param fileFormat
+   * @return
+   */
+  private long findFileAnnotation(long imageId, String fileFormat) {
+    //todo implement (see downloadOmeTiff in branch image-download)
+    return 0;
+  }
+
+  private File generateOmeTiff(long imageId) {
+    //todo implement (see generateOmeTiff branch)
+    return null;
+  }
+
+
+  private long createFileAnnotation(long imageId, File file) {
+    //todo implement (see generateOmeTiff branch)
+    return 0;
   }
 
   /**

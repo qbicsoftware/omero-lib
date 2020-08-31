@@ -395,7 +395,12 @@ public class BasicOMEROClient {
    * @return the annotation Id of the first annotation matching the file format, null if nothing found
    */
   private Long findFileAnnotation(long imageId, String fileFormat) {
-    //todo implement (see downloadOmeTiff in branch image-download)
+    List<FileAnnotationData> fileAnnotations = fetchFileAnnotationDataForImage(imageId);
+    for (FileAnnotationData annotationData : fileAnnotations) {
+      if (annotationData.getFileFormat().equals(fileFormat)) {
+        return annotationData.getId();
+      }
+    }
     return null;
   }
 

@@ -406,8 +406,8 @@ public class BasicOMEROClient {
   /**
    * Generate the ome.tiff file from a given image id
    *
-   * @param imageId to define the image for which
-   * @return
+   * @param imageId to define the image for which the ome.tiff should be generated
+   * @return the generate ome.tiff as a file
    */
   private File generateOmeTiff(long imageId) {
     if (!this.isConnected()) {

@@ -383,10 +383,10 @@ public class BasicOMEROClient {
     try {
       BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
       ImageData imageData = browseFacility.getImage(securityContext, imageId);
-      if (imageData.getFormat().equals(desiredFormat)) {
+      if (imageData.getFormat().equals(omeTiffFormat)) {
         return getImageDownloadLink(imageId);
       } else {
-        Long annotationId = findFileAnnotation(imageId, desiredFormat);
+        Long annotationId = findFileAnnotation(imageId, omeTiffFormat);
         if (annotationId == null) {
           File omeTiffFile = generateOmeTiff(imageId);
           annotationId = attachFileAnnotation(imageId, omeTiffFile);

@@ -383,16 +383,13 @@ public class BasicOMEROClient {
     try {
       BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
       ImageData imageData = browseFacility.getImage(securityContext, imageId);
-      System.out.println(imageData.getFormat()+" is the image format for "+imageId);
       if (imageData.getFormat().equals(desiredFormat)) {
         return getImageDownloadLink(imageId);
       } else {
         Long annotationId = findFileAnnotation(imageId, desiredFormat);
-        System.out.println("found annotation id "+annotationId);
         if (annotationId == null) {
           File omeTiffFile = generateOmeTiff(imageId);
           annotationId = attachFileAnnotation(imageId, omeTiffFile);
-          System.out.println("Annotation id for generated id "+annotationId);
         }
         return getAnnotationFileDownloadLink(annotationId);
       }

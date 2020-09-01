@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+import javax.xml.crypto.Data;
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
@@ -212,7 +213,44 @@ public class BasicOMEROClient {
    * @return the omero ID for the dataset matching search criteria, null if the search found no match
    */
   private Long findOmeroDataset(String projectName, String datasetName) {
-    //TODO implement
+    if (!this.isConnected()) {
+      this.connect();
+    }
+    try {
+      BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
+      Collection<ProjectData> projects = browseFacility.getProjects(securityContext);
+      List<ProjectData> matchingProjects = projects.stream().filter(projectData -> projectData.getName().equals(projectName)).collect(
+          Collectors.toList());
+
+      Set<DatasetData> projectDatasets = new HashSet<>();
+
+      if (matchingProjects.isEmpty()) {
+        return null;
+      } else if (matchingProjects.size() > 1) {
+        for (ProjectData projectData: matchingProjects) {
+            projectDatasets.addAll(projectData.getDatasets());
+        }
+      }
+
+      if (projectDatasets.isEmpty()) {
+        return null;
+      }
+
+      List<DatasetData> matchingDatasets = projectDatasets.stream().filter(datasetData -> datasetData.getName().equals(datasetName)).collect(Collectors.toList());
+
+      // dataset identifiers should be unique and we need to abort when we find more than one datast matching the criteria
+      if (matchingDatasets.isEmpty()) {
+        return null;
+      } else if (matchingDatasets.size() > 1) {
+        throw new IllegalArgumentException("There are multiple datasets with name " + datasetName + " for project " + projectName);
+      }
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
+    }
     return null;
   }
 

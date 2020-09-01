@@ -1,8 +1,12 @@
 package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,11 +16,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
-import javax.xml.crypto.Data;
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
@@ -202,7 +206,29 @@ public class BasicOMEROClient {
    * @return newly generated omero IDs for registered images
    */
   public Set<Long> registerImageFile(String filePath, long datasetId) {
-    //TODO implement
+    ProcessBuilder builder = new ProcessBuilder("omero import",
+        "-s", hostname,
+        "-p " + port,
+        "-u", username,
+        "-w", password,
+        "-d " + (int) datasetId,
+        filePath
+    );
+
+    try {
+      Process importProcess = builder.start();
+      if (importProcess.exitValue() == 0) {
+        String output = new BufferedReader(new InputStreamReader(importProcess.getInputStream())).lines().collect(
+            Collectors.joining("\n"));
+        //TODO parse image IDs from output
+      } else {
+        // nothing was imported so we also return no IDs
+        return null;
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
     return null;
   }
 

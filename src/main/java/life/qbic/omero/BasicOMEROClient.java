@@ -412,7 +412,6 @@ public class BasicOMEROClient {
   private Long findFileAnnotation(long imageId, String fileFormat) {
     List<FileAnnotationData> fileAnnotations = fetchFileAnnotationDataForImage(imageId);
     for (FileAnnotationData annotationData : fileAnnotations) {
-      System.out.println(annotationData.getFileFormat()+" is the file format for the annotation with the id "+annotationData.getId());
       if (annotationData.getFileFormat().equals(fileFormat)) {
         return annotationData.getId();
       }

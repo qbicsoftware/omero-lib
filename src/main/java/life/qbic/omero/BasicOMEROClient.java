@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
@@ -36,14 +37,7 @@ import omero.gateway.model.MapAnnotationData;
 import omero.gateway.model.PixelsData;
 import omero.gateway.model.ProjectData;
 import omero.log.SimpleLogger;
-import omero.model.Dataset;
-import omero.model.DatasetI;
-import omero.model.IObject;
-import omero.model.NamedValue;
-import omero.model.Project;
-import omero.model.ProjectDatasetLink;
-import omero.model.ProjectDatasetLinkI;
-import omero.model.ProjectI;
+import omero.model.*;
 import omero.romio.PlaneDef;
 
 /////////////////////////////////////////////////////
@@ -762,6 +756,22 @@ public class BasicOMEROClient {
 
     return imageByteStream;
 
+  }
+
+  /**
+   *  This function imports a 5D (time-points, channels, x, y, z) numpy array of an image
+   *  to an omero server using the OMERO Python bindings
+   *
+   * @param image containing the pixel information in 5D (time-points, channels, x, y, z)
+   * @param imageName the name of the image
+   * @param projectId the corresponding project ID in openBIS server
+   * @param sampleId the corresponding sample ID in openBIS server
+   * @return newly generated omero ID for registered image array
+   */
+  public Integer registerImageArray(Long[] image, String imageName, String projectId, String sampleId){
+
+
+    return null;
   }
 
   /**

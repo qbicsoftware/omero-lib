@@ -379,7 +379,7 @@ public class BasicOMEROClient {
       this.connect();
     }
 
-    final String desiredFormat = "OMETiff";
+    final String omeTiffFormat = "OMETiff";
     try {
       BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
       ImageData imageData = browseFacility.getImage(securityContext, imageId);

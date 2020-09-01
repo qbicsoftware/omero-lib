@@ -20,6 +20,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
@@ -218,9 +219,19 @@ public class BasicOMEROClient {
     try {
       Process importProcess = builder.start();
       if (importProcess.exitValue() == 0) {
-        String output = new BufferedReader(new InputStreamReader(importProcess.getInputStream())).lines().collect(
-            Collectors.joining("\n"));
-        //TODO parse image IDs from output
+        List<String> relevantOutput =
+            new BufferedReader(
+                  new InputStreamReader(importProcess.getInputStream())
+            ).lines().filter(line -> line.startsWith("Image:")).collect(Collectors.toList());
+
+        if (relevantOutput.isEmpty()) {
+          return null;
+        }
+
+        Set<Long> imageIds = Arrays.stream(relevantOutput.get(0).split(",")).map(Long::parseLong).collect(
+            Collectors.toSet());
+        return imageIds;
+
       } else {
         // nothing was imported so we also return no IDs
         return null;

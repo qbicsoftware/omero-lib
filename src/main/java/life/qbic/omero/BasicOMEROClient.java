@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -172,6 +173,47 @@ public class BasicOMEROClient {
       return;
     }
     this.connect(this.username, this.password, this.hostname, this.port);
+  }
+
+  /**
+   * This function imports an image file to an omero server.
+   * The omero dataset to which the image is registered to is fetched based on the openBIS identifiers.
+   *
+   * @param filePath the path to the image file
+   * @param projectId the project ID in OpenBIS
+   * @param sampleCode the sample Code in OpenBIS
+   * @return newly generated omero IDs for registered images
+   */
+  public Set<Long> registerImageFile(String filePath, String projectId, String sampleCode) {
+    Long datasetId = findOmeroDataset(projectId, sampleCode);
+    if (datasetId == null) {
+      return new HashSet<>();
+    }
+    return registerImageFile(filePath, datasetId);
+  }
+
+  /**
+   * This function imports an image file to an omero server.
+   * The id for the omero dataset to which the image is registered has to be provided.
+   *
+   * @param filePath the path to the image file
+   * @param datasetId the project ID in omero
+   * @return newly generated omero IDs for registered images
+   */
+  public Set<Long> registerImageFile(String filePath, long datasetId) {
+    //TODO implement
+    return null;
+  }
+
+  /**
+   * Searches for an omero project for the current user
+   * @param projectName the name of the project which should be searched
+   * @param datasetName the name of the dataset that is searched
+   * @return the omero ID for the dataset matching search criteria, null if the search found no match
+   */
+  private Long findOmeroDataset(String projectName, String datasetName) {
+    //TODO implement
+    return null;
   }
 
   /**

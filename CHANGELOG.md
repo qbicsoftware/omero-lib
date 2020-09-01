@@ -5,6 +5,7 @@
 * Fetches session uuid from omero
 * Generates complete links for web image viewer
 * Generates complete links for web image download
+* Provide method to register image file in omero
 
 ## 1.1.0 - 12-08-2020
 

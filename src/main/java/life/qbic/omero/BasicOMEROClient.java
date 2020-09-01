@@ -219,10 +219,11 @@ public class BasicOMEROClient {
     try {
       Process importProcess = builder.start();
       if (importProcess.exitValue() == 0) {
+        final String idLinePrefix = "Image:";
         List<String> relevantOutput =
             new BufferedReader(
                   new InputStreamReader(importProcess.getInputStream())
-            ).lines().filter(line -> line.startsWith("Image:")).collect(Collectors.toList());
+            ).lines().filter(line -> line.startsWith(idLinePrefix)).map(line -> line.substring(idLinePrefix.length())).collect(Collectors.toList());
 
         if (relevantOutput.isEmpty()) {
           return null;

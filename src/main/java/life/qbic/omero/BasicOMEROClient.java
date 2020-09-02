@@ -1,19 +1,26 @@
 package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import omero.ServerError;
 import omero.api.RenderingEnginePrx;
@@ -172,6 +179,118 @@ public class BasicOMEROClient {
       return;
     }
     this.connect(this.username, this.password, this.hostname, this.port);
+  }
+
+  /**
+   * This function imports an image file to an omero server.
+   * The omero dataset to which the image is registered to is fetched based on the openBIS identifiers.
+   *
+   * @param filePath the path to the image file
+   * @param projectId the project ID in OpenBIS
+   * @param sampleCode the sample Code in OpenBIS
+   * @return newly generated omero IDs for registered images
+   */
+  public Set<Long> registerImageFile(String filePath, String projectId, String sampleCode) {
+    Long datasetId = findOmeroDataset(projectId, sampleCode);
+    if (datasetId == null) {
+      return new HashSet<>();
+    }
+    return registerImageFile(filePath, datasetId);
+  }
+
+  /**
+   * This function imports an image file to an omero server.
+   * The id for the omero dataset to which the image is registered has to be provided.
+   *
+   * @param filePath the path to the image file
+   * @param datasetId the project ID in omero
+   * @return newly generated omero IDs for registered images
+   */
+  public Set<Long> registerImageFile(String filePath, long datasetId) {
+    ProcessBuilder builder = new ProcessBuilder("omero import",
+        "-s", hostname,
+        "-p " + port,
+        "-u", username,
+        "-w", password,
+        "-d " + (int) datasetId,
+        filePath
+    );
+
+    try {
+      Process importProcess = builder.start();
+      if (importProcess.exitValue() == 0) {
+        final String idLinePrefix = "Image:";
+        List<String> relevantOutput =
+            new BufferedReader(
+                  new InputStreamReader(importProcess.getInputStream())
+            ).lines().filter(line -> line.startsWith(idLinePrefix)).map(line -> line.substring(idLinePrefix.length())).collect(Collectors.toList());
+
+        if (relevantOutput.isEmpty()) {
+          return null;
+        }
+
+        Set<Long> imageIds = Arrays.stream(relevantOutput.get(0).split(",")).map(Long::parseLong).collect(
+            Collectors.toSet());
+        return imageIds;
+
+      } else {
+        // nothing was imported so we also return no IDs
+        return null;
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+
+  /**
+   * Searches for an omero project for the current user
+   * @param projectName the name of the project which should be searched
+   * @param datasetName the name of the dataset that is searched
+   * @return the omero ID for the dataset matching search criteria, null if the search found no match
+   */
+  private Long findOmeroDataset(String projectName, String datasetName) {
+    if (!this.isConnected()) {
+      this.connect();
+    }
+    try {
+      BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
+      Collection<ProjectData> projects = browseFacility.getProjects(securityContext);
+      List<ProjectData> matchingProjects = projects.stream().filter(projectData -> projectData.getName().equals(projectName)).collect(
+          Collectors.toList());
+
+      Set<DatasetData> projectDatasets = new HashSet<>();
+
+      if (matchingProjects.isEmpty()) {
+        return null;
+      } else if (matchingProjects.size() > 1) {
+        for (ProjectData projectData: matchingProjects) {
+            projectDatasets.addAll(projectData.getDatasets());
+        }
+      }
+
+      if (projectDatasets.isEmpty()) {
+        return null;
+      }
+
+      List<DatasetData> matchingDatasets = projectDatasets.stream().filter(datasetData -> datasetData.getName().equals(datasetName)).collect(Collectors.toList());
+
+      // dataset identifiers should be unique and we need to abort when we find more than one datast matching the criteria
+      if (matchingDatasets.isEmpty()) {
+        return null;
+      } else if (matchingDatasets.size() > 1) {
+        throw new IllegalArgumentException("There are multiple datasets with name " + datasetName + " for project " + projectName);
+      } else {
+        return matchingDatasets.get(0).getId();
+      }
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
+    }
   }
 
   /**

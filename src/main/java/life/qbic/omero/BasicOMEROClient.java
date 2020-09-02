@@ -16,7 +16,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
+import omero.RLong;
 import omero.ServerError;
+import omero.api.IPixelsPrx;
+import omero.api.RawPixelsStorePrx;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
 import omero.gateway.Gateway;
@@ -768,11 +771,158 @@ public class BasicOMEROClient {
    * @param sampleId the corresponding sample ID in openBIS server
    * @return newly generated omero ID for registered image array
    */
-  public Integer registerImageArray(Long[] image, String imageName, String projectId, String sampleId){
+  public Integer registerImageArray(List<Integer[]> image, String imageName, String projectId, String sampleId){
+    IPixelsPrx proxy = null;
 
+    try {
+      proxy = gateway.getPixelsService(securityContext);
+    } catch (DSOutOfServiceException e) {
+      e.printStackTrace();
+    }
 
+    PixelsType type = new PixelsTypeI();
+    List<Integer> channels = Arrays.asList(image.get(1));
+
+    int xSize = image.get(2).length;
+    int ySize = image.get(3).length;
+    int zSize = image.get(4).length;
+    int timePointSize = image.get(0).length;
+    int channelSize = image.get(1).length;
+
+    RLong idNew = null;
+    try {
+      idNew = proxy.createImage(xSize, ySize, zSize, timePointSize, channels, type, imageName,"From Sample ID: "+sampleId);
+    } catch (ServerError serverError) {
+      serverError.printStackTrace();
+    }
+
+    try {
+        if (idNew == null)
+          throw new Exception("New image could not be created.");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+    ImageData newImage = null;
+    try {
+      newImage = loadImage(idNew.getValue());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    //link the new image and the dataset hosting the source image.
+    DatasetImageLink link = new DatasetImageLinkI();
+    long datasetId = getDataset(projectId,sampleId);
+    link.setParent(new DatasetI(datasetId,false));
+    link.setChild(new ImageI(newImage.getId(), false));
+
+    try {
+      gateway.getUpdateService(securityContext).saveAndReturnObject(link);
+    } catch (ServerError | DSOutOfServiceException serverError) {
+      serverError.printStackTrace();
+    }
+    //Write the data.
+    RawPixelsStorePrx store = null;
+    try {
+      store = gateway.getPixelsStore(securityContext);
+      store.setPixelsId(newImage.getDefaultPixels().getId(), false);
+
+      for (int t = 0; t < timePointSize; t++) {
+        for (int c = 0; c < channelSize; c++) {
+          for (int z = 0; z < zSize; z++) {
+            store.setPlane(generatePlane(z,c,t), z, c, t);
+          }
+        }
+      }
+      store.save();
+    } catch (Exception e) {
+      try {
+        throw new Exception("Cannot set the plane", e);
+      } catch (Exception exception) {
+        exception.printStackTrace();
+      }
+    } finally {
+      if (store != null) {
+        try {
+          store.close();
+        } catch (ServerError serverError) {
+          serverError.printStackTrace();
+        }
+      }
+    }
     return null;
   }
+
+  /**
+   * Loads the image.
+   *
+   * @param imageID The id of the image to load.
+   * @return the image data of the the image defined by the given id
+   */
+  private ImageData loadImage(long imageID)
+          throws Exception
+  {
+    BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
+    return browse.getImage(securityContext, imageID);
+  }
+
+
+  /**
+   * Generate a plane from the z-axis, the channels and the time-points of an image
+   *
+   * @param zValue a value between 1 and the highest number on the z-axis
+   * @param cValue a value between 1 and number of channels
+   * @param tValue a value between 1 and the latest time-point
+   * @return return the plane as a byte array
+   */
+  private byte[] generatePlane(int zValue, int cValue, int tValue){
+    RawPixelsStorePrx store;
+
+    try {
+      store = gateway.getPixelsStore(securityContext);
+      return store.getPlane(zValue, cValue, tValue);
+    } catch (DSOutOfServiceException | ServerError e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+
+  /**
+   * sadfasdf
+   *
+   * @param projectName
+   * @param sampleName
+   * @return
+   */
+  private long getDataset(String projectName, String sampleName){
+    BrowseFacility browse = null;
+    try {
+      browse = this.gateway.getFacility(BrowseFacility.class);
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    try {
+      Collection<ProjectData> project = browse.getProjects(securityContext);
+
+      for(ProjectData data : project){
+        if(data.getName().equals(projectName)){
+          Collection<DatasetData> datasets = browse.getDatasets(securityContext);
+          for(DatasetData dsData : datasets){
+            if(dsData.getName().equals(sampleName)){
+              return dsData.getId();
+            }
+          }
+        }
+      }
+
+    } catch (DSOutOfServiceException e) {
+      e.printStackTrace();
+    } catch (DSAccessException e) {
+      e.printStackTrace();
+    }
+    return -1;
+  }
+
 
   /**
    * The destructor has to make sure to disconnect from the OMERO server and close the session.

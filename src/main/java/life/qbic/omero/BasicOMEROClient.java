@@ -373,6 +373,7 @@ public class BasicOMEROClient {
    * @return a link to download the OME TIFF corresponding to the image id
    *
    * @see <a href="https://www-legacy.openmicroscopy.org/site/products/ome-tiff">OME-TIFF file format</a>
+   * @since 1.2.0
    */
   public String downloadOmeTiff(long imageId) {
     if (!this.isConnected()) {
@@ -496,6 +497,7 @@ public class BasicOMEROClient {
 
       long position = 0;
       int readLength;
+      // chunk size of chunks written to the RawFileStore
       final int BYTE_INCREMENT = 262144;
 
       byte[] bytes = new byte[BYTE_INCREMENT];

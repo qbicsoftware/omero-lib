@@ -281,6 +281,8 @@ public class BasicOMEROClient {
         return null;
       } else if (matchingDatasets.size() > 1) {
         throw new IllegalArgumentException("There are multiple datasets with name " + datasetName + " for project " + projectName);
+      } else {
+        return matchingDatasets.get(0).getId();
       }
     } catch (DSOutOfServiceException dsOutOfServiceException) {
       throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
@@ -289,7 +291,6 @@ public class BasicOMEROClient {
     } catch (DSAccessException dsAccessException) {
       throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
-    return null;
   }
 
   /**

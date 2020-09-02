@@ -384,16 +384,20 @@ public class BasicOMEROClient {
     try {
       BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
       ImageData imageData = browseFacility.getImage(securityContext, imageId);
-      if (imageData.getFormat().equals(omeTiffFormat)) {
-        return getImageDownloadLink(imageId);
-      } else {
-        Long annotationId = findFileAnnotation(imageId, omeTiffFormat);
-        if (annotationId == null) {
-          File omeTiffFile = generateOmeTiff(imageId);
-          annotationId = attachFileAnnotation(imageId, omeTiffFile);
+
+      if (imageData.getFormat() != null) {
+        if (imageData.getFormat().equals(omeTiffFormat)) {
+          return getImageDownloadLink(imageId);
         }
-        return getAnnotationFileDownloadLink(annotationId);
       }
+
+      Long annotationId = findFileAnnotation(imageId, omeTiffFormat);
+      if (annotationId == null) {
+        File omeTiffFile = generateOmeTiff(imageId);
+        annotationId = attachFileAnnotation(imageId, omeTiffFile);
+      }
+      return getAnnotationFileDownloadLink(annotationId);
+
     } catch (DSOutOfServiceException dsOutOfServiceException) {
       throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
     } catch (ExecutionException executionException) {
@@ -413,8 +417,10 @@ public class BasicOMEROClient {
   private Long findFileAnnotation(long imageId, String fileFormat) {
     List<FileAnnotationData> fileAnnotations = fetchFileAnnotationDataForImage(imageId);
     for (FileAnnotationData annotationData : fileAnnotations) {
-      if (annotationData.getFileFormat().equals(fileFormat)) {
-        return annotationData.getId();
+      if (annotationData.getFileFormat() != null) {
+        if (annotationData.getFileFormat().equals(fileFormat)) {
+          return annotationData.getId();
+        }
       }
     }
     return null;

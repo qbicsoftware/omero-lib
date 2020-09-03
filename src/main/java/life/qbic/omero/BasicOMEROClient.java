@@ -2,7 +2,12 @@ package life.qbic.omero;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,6 +26,8 @@ import life.qbic.datamodel.dtos.imaging.parameters.ImagingHardware;
 import life.qbic.datamodel.people.Address;
 import ome.model.annotations.MapAnnotation;
 import omero.ServerError;
+import omero.api.ExporterPrx;
+import omero.api.RawFileStorePrx;
 import omero.api.RenderingEnginePrx;
 import omero.api.ThumbnailStorePrx;
 import omero.gateway.Gateway;
@@ -41,14 +48,23 @@ import omero.gateway.model.MapAnnotationData;
 import omero.gateway.model.PixelsData;
 import omero.gateway.model.ProjectData;
 import omero.log.SimpleLogger;
+import omero.model.ChecksumAlgorithm;
+import omero.model.ChecksumAlgorithmI;
 import omero.model.Dataset;
 import omero.model.DatasetI;
+import omero.model.FileAnnotation;
+import omero.model.FileAnnotationI;
 import omero.model.IObject;
+import omero.model.ImageAnnotationLink;
+import omero.model.ImageAnnotationLinkI;
 import omero.model.NamedValue;
+import omero.model.OriginalFile;
+import omero.model.OriginalFileI;
 import omero.model.Project;
 import omero.model.ProjectDatasetLink;
 import omero.model.ProjectDatasetLinkI;
 import omero.model.ProjectI;
+import omero.model.enums.ChecksumAlgorithmSHA1160;
 import omero.romio.PlaneDef;
 
 /////////////////////////////////////////////////////
@@ -353,6 +369,192 @@ public class BasicOMEROClient {
       throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
     }
     return downloadLinkAddress;
+  }
+
+  /**
+   * This method returns a link to download an OME TIFF file for the given image id
+   *
+   * @param imageId the image for which an OME TIFF should be downloaded
+   * @return a link to download the OME TIFF corresponding to the image id
+   *
+   * @see <a href="https://www-legacy.openmicroscopy.org/site/products/ome-tiff">OME-TIFF file format</a>
+   * @since 1.2.0
+   */
+  public String downloadOmeTiff(long imageId) {
+    if (!this.isConnected()) {
+      this.connect();
+    }
+
+    final String omeTiffFormat = "OMETiff";
+    try {
+      BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
+      ImageData imageData = browseFacility.getImage(securityContext, imageId);
+
+      if (imageData.getFormat() != null) {
+        if (imageData.getFormat().equals(omeTiffFormat)) {
+          return getImageDownloadLink(imageId);
+        }
+      }
+
+      Long annotationId = findFileAnnotation(imageId, omeTiffFormat);
+      if (annotationId == null) {
+        File omeTiffFile = generateOmeTiff(imageId);
+        annotationId = attachFileAnnotation(imageId, omeTiffFile);
+      }
+      return getAnnotationFileDownloadLink(annotationId);
+
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
+    }
+  }
+
+  /**
+   * This method searches for file annotations with the given file format
+   *
+   * @param imageId the image id of the image that provides the annotations
+   * @param fileFormat the format of the file annotation to be found
+   * @return the annotation Id of the first annotation matching the file format, null if nothing found
+   */
+  private Long findFileAnnotation(long imageId, String fileFormat) {
+    List<FileAnnotationData> fileAnnotations = fetchFileAnnotationDataForImage(imageId);
+    for (FileAnnotationData annotationData : fileAnnotations) {
+      if (annotationData.getFileFormat() != null) {
+        if (annotationData.getFileFormat().equals(fileFormat)) {
+          return annotationData.getId();
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Generate the ome.tiff file from a given image id
+   *
+   * @param imageId to define the image for which the ome.tiff should be generated
+   * @return the generate ome.tiff as a file
+   */
+  private File generateOmeTiff(long imageId) {
+    if (!this.isConnected()) {
+      connect();
+    }
+    final int BUFFER_SIZE = 1024 * 1024;
+
+    File generatedTiff = null;
+
+    try {
+      generatedTiff = File.createTempFile("generated_" + imageId + "_",".ome.tiff");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    try {
+      ExporterPrx exporterService = gateway.getExporterService(securityContext);
+      exporterService.addImage(imageId);
+      long fileLength = exporterService.generateTiff();
+
+      FileOutputStream fileOutputStream = new FileOutputStream(generatedTiff);
+
+      int bytesRead = 0;
+      while (bytesRead < fileLength) {
+        byte[] currentImageSlice = exporterService.read(bytesRead, BUFFER_SIZE);
+        fileOutputStream.write(currentImageSlice);
+        bytesRead += currentImageSlice.length;
+      }
+
+      fileOutputStream.close();
+      exporterService.close();
+
+    } catch (ServerError | DSOutOfServiceException | FileNotFoundException exception) {
+      throw new RuntimeException("Omero could not create the ome tiff for image " + imageId, exception);
+    } catch (IOException ioException) {
+      throw new RuntimeException("Could not write ome.tiff to temporary file for image " + imageId, ioException);
+    }
+    return generatedTiff;
+  }
+
+
+  /**
+   * Attaches a FileAnnotation to the image containing the provided file. This methods also stores the file in the RawFileStore
+   *
+   * @param imageId the image an annotation is attached to
+   * @param file the file that will be contained in the annotation
+   * @return the annotation ID for the attached annotation
+   */
+  private long attachFileAnnotation(long imageId, File file) {
+
+    String fileName = file.getName();
+    String absolutePath = file.getAbsolutePath();
+    String folderPath = absolutePath.substring(0, absolutePath.length() - fileName.length());
+
+    final ChecksumAlgorithm checksumAlgorithm = new ChecksumAlgorithmI();
+    checksumAlgorithm.setValue(omero.rtypes.rstring(ChecksumAlgorithmSHA1160.value));
+
+    OriginalFile originalFile = new OriginalFileI();
+    originalFile.setName(omero.rtypes.rstring(fileName));
+    originalFile.setPath(omero.rtypes.rstring(folderPath));
+    originalFile.setSize(omero.rtypes.rlong(file.length()));
+    originalFile.setHasher(checksumAlgorithm);
+    originalFile.setMimetype(omero.rtypes.rstring("OMETiff"));
+
+    try {
+      DataManagerFacility dataManagerFacility = gateway.getFacility(DataManagerFacility.class);
+      originalFile = (OriginalFile) dataManagerFacility.saveAndReturnObject(securityContext, originalFile);
+
+
+
+      long position = 0;
+      int readLength;
+      // chunk size of chunks written to the RawFileStore
+      final int BYTE_INCREMENT = 262144;
+
+      byte[] bytes = new byte[BYTE_INCREMENT];
+      ByteBuffer byteBuffer;
+      RawFileStorePrx rawFileStore = gateway.getRawFileService(securityContext);
+      try (FileInputStream fileInputStream = new FileInputStream(file)){
+        rawFileStore.setFileId(originalFile.getId().getValue());
+        while ((readLength = fileInputStream.read(bytes)) > 0) {
+          rawFileStore.write(bytes, position, readLength);
+          position += readLength;
+          byteBuffer = ByteBuffer.wrap(bytes);
+          byteBuffer.limit(readLength);
+        }
+        originalFile = rawFileStore.save();
+      } finally{
+        rawFileStore.close();
+      }
+
+
+      FileAnnotation fileAnnotation = new FileAnnotationI();
+      fileAnnotation.setFile(originalFile);
+      fileAnnotation.setDescription(omero.rtypes.rstring("attached file annotation for image " + imageId));
+
+      fileAnnotation = (FileAnnotation) dataManagerFacility.saveAndReturnObject(securityContext, fileAnnotation);
+
+      BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
+      ImageData imageData = browseFacility.getImage(securityContext, imageId);
+
+      ImageAnnotationLink annotationLink = new ImageAnnotationLinkI();
+      annotationLink.setChild(fileAnnotation);
+      annotationLink.setParent(imageData.asImage());
+      annotationLink = (ImageAnnotationLink) dataManagerFacility.saveAndReturnObject(securityContext, annotationLink);
+
+      return fileAnnotation.getId().getValue();
+
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
+    } catch (IOException e) {
+      throw new RuntimeException("File operation failed.", e);
+    }  catch (ServerError serverError) {
+      throw new RuntimeException("Omero store interaction failed.", serverError);
+    }
   }
 
   /**

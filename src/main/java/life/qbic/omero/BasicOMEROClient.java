@@ -1001,17 +1001,39 @@ public class BasicOMEROClient {
     ImagingHardware instrumentHardware = instrument.getHardware();
     Location instrumentLocation = instrument.getLocation();
     Address instrumentLocationAddress = instrumentLocation.getAddress();
-    mapAnnotationContent.add(new NamedValue("hardware.detector.type", instrumentHardware.getDetector().getType()));
-    mapAnnotationContent.add(new NamedValue("hardware.objective", instrumentHardware.getObjective()));
-    mapAnnotationContent.add(new NamedValue("manufacturer", instrument.getManufacturer()));
-    mapAnnotationContent.add(new NamedValue("location.address.affiliation", instrumentLocationAddress.getAffiliation()));
-    mapAnnotationContent.add(new NamedValue("location.address.country", instrumentLocationAddress.getCountry()));
-    mapAnnotationContent.add(new NamedValue("location.address.street", instrumentLocationAddress.getStreet()));
-    mapAnnotationContent.add(new NamedValue("location.address.zipCode", instrumentLocationAddress.getZipCode().toString()));
-    mapAnnotationContent.add(new NamedValue("location.roomId", instrumentLocation.getRoomId()));
-    mapAnnotationContent.add(new NamedValue("model", instrument.getModel()));
-    mapAnnotationContent.add(new NamedValue("serialNumber", instrument.getSerialNumber()));
-    mapAnnotationContent.add(new NamedValue("type", instrument.getType()));
+    try {
+      mapAnnotationContent.add(new NamedValue("hardware.detector.type", instrumentHardware.getDetector().getType()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("hardware.objective", instrumentHardware.getObjective()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("manufacturer", instrument.getManufacturer()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.affiliation", instrumentLocationAddress.getAffiliation()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.country", instrumentLocationAddress.getCountry()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.street", instrumentLocationAddress.getStreet()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.zipCode", instrumentLocationAddress.getZipCode().toString()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.roomId", instrumentLocation.getRoomId()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("model", instrument.getModel()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("serialNumber", instrument.getSerialNumber()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("type", instrument.getType()));
+    } catch (NullPointerException ignored) {}
 
     MapAnnotationData annotationData = new MapAnnotationData();
     annotationData.setContent(mapAnnotationContent);

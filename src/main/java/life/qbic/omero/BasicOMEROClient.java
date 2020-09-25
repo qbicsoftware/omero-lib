@@ -20,6 +20,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+import life.qbic.datamodel.dtos.imaging.Instrument;
+import life.qbic.datamodel.dtos.imaging.Location;
+import life.qbic.datamodel.dtos.imaging.parameters.ImagingHardware;
+import life.qbic.datamodel.people.Address;
+import ome.model.annotations.MapAnnotation;
 import omero.ServerError;
 import omero.api.ExporterPrx;
 import omero.api.RawFileStorePrx;
@@ -997,6 +1002,86 @@ public class BasicOMEROClient {
     return imageByteStream;
 
   }
+
+  /**
+   * Associates instrument metadata with an existing image in the OMERO server.
+   * @param instrument containing information to be associated with the image
+   * @param imageId ID of the image that will be annotated
+   */
+  public void associateInstrumentWithImage(Instrument instrument, Long imageId) {
+    if (!isConnected()) {
+      this.connect();
+    }
+    // 1. Check if an image with the id is in OMERO. Throw a runtime exception if not
+    ImageData imageData;
+    try {
+      BrowseFacility browseFacility = gateway.getFacility(BrowseFacility.class);
+      imageData = browseFacility.getImage(securityContext, imageId);
+    } catch (DSOutOfServiceException dsOutOfServiceException) {
+      throw new RuntimeException("Error while accessing omero service: broken connection, expired session or not logged in", dsOutOfServiceException);
+    } catch (ExecutionException executionException) {
+      throw new RuntimeException("Task aborted unexpectedly.", executionException);
+    } catch (DSAccessException dsAccessException) {
+      throw new RuntimeException("Could not pull data from the omero server.", dsAccessException);
+    }
+
+    if (imageData == null) {
+      throw new IllegalArgumentException("No image available with image id " + imageId);
+    }
+    // 2. Use the instrument metadata and store them accordingly next to the image in OMERO.
+    List<NamedValue> mapAnnotationContent = new ArrayList<>();
+    ImagingHardware instrumentHardware = instrument.getHardware();
+    Location instrumentLocation = instrument.getLocation();
+    Address instrumentLocationAddress = instrumentLocation.getAddress();
+    try {
+      mapAnnotationContent.add(new NamedValue("hardware.detector.type", instrumentHardware.getDetector().getType()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("hardware.objective", instrumentHardware.getObjective()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("manufacturer", instrument.getManufacturer()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.affiliation", instrumentLocationAddress.getAffiliation()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.country", instrumentLocationAddress.getCountry()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.street", instrumentLocationAddress.getStreet()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.address.zipCode", instrumentLocationAddress.getZipCode().toString()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("location.roomId", instrumentLocation.getRoomId()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("model", instrument.getModel()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("serialNumber", instrument.getSerialNumber()));
+    } catch (NullPointerException ignored) {}
+    try {
+      mapAnnotationContent.add(new NamedValue("type", instrument.getType()));
+    } catch (NullPointerException ignored) {}
+
+    MapAnnotationData annotationData = new MapAnnotationData();
+    annotationData.setContent(mapAnnotationContent);
+    annotationData.setDescription("Instrument");
+
+    try {
+      DataManagerFacility dataManagerFacility = gateway.getFacility(DataManagerFacility.class);
+      dataManagerFacility.attachAnnotation(securityContext, annotationData, imageData);
+    } catch (DSOutOfServiceException | ExecutionException | DSAccessException e) {
+    // Throw a runtime exception if anything goes wrong during this process
+      throw new RuntimeException("Could not annotate instrument metadata.", e);
+    }
+    // 3. Enjoy coding!
+    // YAY!
+  }
+
 
   /**
    * The destructor has to make sure to disconnect from the OMERO server and close the session.

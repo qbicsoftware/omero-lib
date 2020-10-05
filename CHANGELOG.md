@@ -1,6 +1,6 @@
 # Changelog for the omero client library
 
-## 1.2.0
+## 1.2.0 (2020-10-05)
 * Throws RuntimeExceptions instead of Checked exceptions
 * Fetches session uuid from omero
 * Generates complete links for web image viewer

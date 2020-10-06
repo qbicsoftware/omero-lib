@@ -8,8 +8,6 @@
 )](https://travis-ci.com/qbicsoftware/omero-lib)
 [![DOI](https://zenodo.org/badge/176299724.svg)](https://zenodo.org/badge/latestdoi/176299724)
 
-https://img.shields.io/github/license/qbicsoftware/omero-client-lib
-
 OMERO client library - A Java-based library to connect to the OMERO server
 
 ## Author

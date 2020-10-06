@@ -7,18 +7,31 @@
 	<parent>
 		<groupId>life.qbic</groupId>
 		<artifactId>parent-pom</artifactId>
-		<version>2.2.5</version>
+		<version>3.1.3</version>
 	</parent>
 
-	<groupId>life.qbic</groupId>
 	<artifactId>omero-client-lib</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<name>OMERO client library</name>
 	<url>http://github.com/qbicsoftware/omero-client-lib</url>
 	<description>Java-based library to connect to the OMERO server</description>
 	<packaging>jar</packaging>
 
 	<repositories>
+		<!-- Maven central always first, the majority of artefacts is hosted there. -->
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>maven-central</id>
+			<name>Maven central</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
 		<!-- we only need to tell maven where to find our parent pom and other
 			QBiC dependencies -->
 		<repository>
@@ -32,7 +45,7 @@
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
-			<url>https://qbic-repo.am10.uni-tuebingen.de/repository/maven-snapshots</url>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-snapshots</url>
 		</repository>
 		<repository>
 			<id>nexus-releases</id>
@@ -45,7 +58,7 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<url>https://qbic-repo.am10.uni-tuebingen.de/repository/maven-releases</url>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
 		</repository>
 		<!-- OMERO repositories -->
 		<repository>
@@ -79,6 +92,11 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.spockframework</groupId>
+			<artifactId>spock-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

@@ -6,7 +6,7 @@
 ![Java Language](https://img.shields.io/badge/language-java-blue.svg)
 [![License](https://img.shields.io/github/license/qbicsoftware/omero-client-lib
 )](https://travis-ci.com/qbicsoftware/omero-lib)
-[![DOI](https://zenodo.org/badge/172898372.svg)](https://zenodo.org/badge/latestdoi/172898372)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4067716.svg)](https://doi.org/10.5281/zenodo.4067716)
 
 OMERO client library - A Java-based library to connect to the OMERO server
 

@@ -10,7 +10,7 @@
 
 https://img.shields.io/github/license/qbicsoftware/omero-client-lib
 
-OMERO client library, version 1.2.0-SNAPSHOT - Java-based library to connect to the OMERO server
+OMERO client library - A Java-based library to connect to the OMERO server
 
 ## Author
 Created by Luis Kuhn Cuellar (luis.kuhn@qbic.uni-tuebingen.de).

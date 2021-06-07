@@ -352,7 +352,7 @@ public class BasicOMEROClient {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
       ImageData image = browse.getImage(this.securityContext, imageID);
       if (image.getFormat() != null) {
-        downloadLinkAddress = "http://" + hostname + "/omero/webgateway/archived_files/download/"
+        downloadLinkAddress = "https://" + hostname + "/omero/webgateway/archived_files/download/"
             + imageID + "?server=" + serverId + "&bsession=" + sessionUuid;
       } else {
         throw new IllegalArgumentException(
@@ -588,7 +588,7 @@ public class BasicOMEROClient {
       connect();
     }
 
-    return "http://" + hostname + "/omero/webclient/annotation/" + annotationID + "?server="
+    return "https://" + hostname + "/omero/webclient/annotation/" + annotationID + "?server="
         + serverId + "&bsession=" + sessionUuid;
   }
 
@@ -936,7 +936,7 @@ public class BasicOMEROClient {
       connect();
     }
 
-    return "http://" + hostname + "/omero/webclient/img_detail/" + imageId + "/?server=" + serverId
+    return "https://" + hostname + "/omero/webclient/img_detail/" + imageId + "/?server=" + serverId
         + "&bsession=" + sessionUuid;
   }
 

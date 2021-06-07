@@ -7,17 +7,31 @@
 	<parent>
 		<groupId>life.qbic</groupId>
 		<artifactId>parent-pom</artifactId>
-		<version>3.1.1</version>
+		<version>3.1.3</version>
 	</parent>
 
 	<artifactId>omero-client-lib</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.2.0</version>
 	<name>OMERO client library</name>
 	<url>http://github.com/qbicsoftware/omero-client-lib</url>
 	<description>Java-based library to connect to the OMERO server</description>
 	<packaging>jar</packaging>
 
 	<repositories>
+		<!-- Maven central always first, the majority of artefacts is hosted there. -->
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>maven-central</id>
+			<name>Maven central</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
 		<!-- we only need to tell maven where to find our parent pom and other
 			QBiC dependencies -->
 		<repository>

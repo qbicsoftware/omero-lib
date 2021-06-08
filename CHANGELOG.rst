@@ -11,12 +11,14 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
 **Fixed**
 
+* Port to QUBE
+
 **Dependencies**
 
 **Deprecated**
 
 
-1.2.0 (2021-06-08)
+1.2.0 (2020-08-12)
 ----------------------------------------------
 
 **Added**
@@ -27,8 +29,6 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 * Generates complete links for web image download
 
 **Fixed**
-
-* Port to QUBE
 
 **Dependencies**
 

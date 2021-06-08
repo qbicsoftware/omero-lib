@@ -87,7 +87,7 @@
 		<!-- OMERO repositories -->
 		<repository>
 			<id>ome.maven</id>
-			<url>http://artifacts.openmicroscopy.org/artifactory/maven/</url>
+			<url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
 		</repository>
 		<repository>
 			<id>unidata-releases</id>

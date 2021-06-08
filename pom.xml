@@ -5,7 +5,7 @@
 
 	<groupId>life.qbic</groupId>
 	<artifactId>omero-client-lib</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.1-SNAPSHOT</version>
 	<name>OMERO client library</name>
 	<url>http://github.com/qbicsoftware/omero-lib</url>
 	<description>OMERO client library - A Java-based library to access an OMERO server</description>

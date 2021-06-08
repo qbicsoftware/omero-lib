@@ -4,7 +4,21 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
-1.2.0 (2021-01-01)
+1.2.1 (2021-06-08)
+------------------
+
+**Added**
+
+**Fixed**
+
+* Port to QUBE
+
+**Dependencies**
+
+**Deprecated**
+
+
+1.2.0 (2020-08-12)
 ----------------------------------------------
 
 **Added**
@@ -15,8 +29,6 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 * Generates complete links for web image download
 
 **Fixed**
-
-* Port to QUBE
 
 **Dependencies**
 

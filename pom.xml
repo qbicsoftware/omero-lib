@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns="http://maven.apache.org/POM/4.0.0"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<groupId>life.qbic</groupId>
+	<artifactId>omero-client-lib</artifactId>
+	<version>1.2.0-SNAPSHOT</version>
+	<name>OMERO client library</name>
+	<url>http://github.com/qbicsoftware/omero-lib</url>
+	<description>OMERO client library - A Java-based library to access an OMERO server</description>
+	<packaging>jar</packaging>
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -10,54 +18,70 @@
 		<version>3.1.3</version>
 	</parent>
 
-	<artifactId>omero-client-lib</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
-	<name>OMERO client library</name>
-	<url>http://github.com/qbicsoftware/omero-lib</url>
-	<description>OMERO client library - A Java-based library to access an OMERO server</description>
-	<packaging>jar</packaging>
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<omero.version>5.4.10-ice36-b105</omero.version>
+		<bioformats.version>5.8.2</bioformats.version>
+	</properties>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>qbic-plugins-2</id>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<distributionManagement>
+		<repository>
+			<uniqueVersion>true</uniqueVersion>
+			<id>nexus-releases</id>
+			<name>QBiC Releases</name>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
+		</repository>
+		<snapshotRepository>
+			<uniqueVersion>false</uniqueVersion>
+			<id>nexus-snapshots</id>
+			<name>QBiC Snapshots</name>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<!-- we only need to tell maven where to find our parent pom and other QBiC dependencies -->
 	<repositories>
-
 		<repository>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>maven-central</id>
-			<name>Maven central</name>
-			<url>https://repo.maven.apache.org/maven2</url>
-		</repository>
-		<repository>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</snapshots>
 			<id>nexus-snapshots</id>
 			<name>QBiC Snapshots</name>
-			<url>http://qbic-repo.qbic.uni-tuebingen.de:8081/repository/maven-snapshots</url>
-		</repository>
-		<repository>
 			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<checksumPolicy>fail</checksumPolicy>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-snapshots</url>
+		</repository>
+		<repository>
+			<id>nexus-releases</id>
+			<name>QBiC Releases</name>
+			<releases>
 				<checksumPolicy>fail</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<id>nexus-releases</id>
-			<name>QBiC Releases</name>
-			<url>http://qbic-repo.qbic.uni-tuebingen.de:8081/repository/maven-releases</url>
+			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
+		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 
 		<!-- OMERO repositories -->
@@ -79,7 +103,6 @@
 	</repositories>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>omero</groupId>
 			<artifactId>blitz</artifactId>
@@ -93,19 +116,15 @@
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.spockframework</groupId>
 			<artifactId>spock-core</artifactId>
+			<version>1.3-groovy-2.5</version>
 			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
-
-	<properties>
-		<omero.version>5.4.10-ice36-b105</omero.version>
-		<bioformats.version>5.8.2</bioformats.version>
-	</properties>
 
 	<dependencyManagement>
 		<dependencies>
@@ -161,5 +180,95 @@
 
 		</dependencies>
 	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.21.0</version>
+				<configuration>
+					<includes>
+						<include>**/*Spec</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.gmavenplus</groupId>
+				<artifactId>gmavenplus-plugin</artifactId>
+				<version>1.12.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>execute</goal>
+							<goal>addSources</goal>
+							<goal>addTestSources</goal>
+							<goal>generateStubs</goal>
+							<goal>compile</goal>
+							<goal>generateTestStubs</goal>
+							<goal>compileTests</goal>
+							<goal>removeStubs</goal>
+							<goal>removeTestStubs</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>site</id>
+						<phase>site</phase>
+						<goals>
+							<goal>generateStubs</goal>
+							<goal>generateTestStubs</goal>
+							<goal>groovydoc</goal>
+							<goal>groovydocTests</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<groovyDocOutputDirectory>${project.build.directory}/site/gapidocs</groovyDocOutputDirectory>
+					<testGroovyDocOutputDirectory>${project.build.directory}/site/testgapidocs</testGroovyDocOutputDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.7.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
+			<plugin>
+				<groupId>life.qbic</groupId>
+				<artifactId>groovydoc-maven-plugin</artifactId>
+				<version>1.0.2</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>life.qbic.cli.PostregistrationToolEntryPoint</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+				<groupId>org.apache.maven.plugins</groupId>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

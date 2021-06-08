@@ -4,7 +4,7 @@ email: luis.kuhn-cuellar@qbic.uni-tuebingen.de
 project_name: omero-lib
 project_short_description: OMERO client library - A Java-based library to access an
   OMERO server
-version: 0.1.0-SNAPSHOT
+version: 1.2.0-SNAPSHOT
 domain: lib
 language: java
 project_slug: omero-lib

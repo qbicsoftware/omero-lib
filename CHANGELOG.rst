@@ -16,6 +16,8 @@ This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
 **Fixed**
 
+* Port to QUBE
+
 **Dependencies**
 
 **Deprecated**

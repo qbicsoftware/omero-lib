@@ -1,0 +1,20 @@
+qube_version: '2.6.1 # <<QUBE_NO_BUMP>>'
+full_name: Luis Kuhn Cuellar
+email: luis.kuhn-cuellar@qbic.uni-tuebingen.de
+project_name: omero-lib
+project_short_description: OMERO client library - A Java-based library to access an
+  OMERO server
+version: 1.2.1
+domain: lib
+language: java
+project_slug: omero-lib
+project_slug_no_hyphen: omero_lib
+template_version: '1.0.5 # <<QUBE_NO_BUMP>>'
+template_handle: lib-java
+github_username: luiskuhn
+creator_github_username: luiskuhn
+is_github_repo: false
+is_repo_private: false
+is_github_orga: false
+copyright_holder: QBiC
+license: MIT

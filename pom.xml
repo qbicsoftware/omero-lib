@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+		 xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 
 	<groupId>life.qbic</groupId>
 	<artifactId>omero-client-lib</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 	<name>OMERO client library</name>
-	<url>http://github.com/qbicsoftware/omero-lib</url>
+	<url>https://github.com/qbicsoftware/omero-lib</url>
 	<description>OMERO client library - A Java-based library to access an OMERO server</description>
 	<packaging>jar</packaging>
 	<modelVersion>4.0.0</modelVersion>
@@ -21,6 +21,8 @@
 
 		<omero.version>5.4.10-ice36-b105</omero.version>
 		<bioformats.version>5.8.2</bioformats.version>
+
+		<log4j.version>2.15.0</log4j.version>
 	</properties>
 
 	<pluginRepositories>

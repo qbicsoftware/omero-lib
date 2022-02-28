@@ -4,6 +4,21 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
+1.2.2 (2022-02-28)
+------------------
+
+**Added**
+
+**Fixed**
+
+* CVE-2020-25638
+
+**Dependencies**
+
+* ``org.hibernate:hibernate-core:3.5.6-Final`` -> ``5.6.5.Final``
+
+**Deprecated**
+
 1.2.1 (2021-06-08)
 ------------------
 

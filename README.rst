@@ -23,7 +23,7 @@ The JAR file will be created in the /target folder:
 .. code-block:: bash
 
     |-target
-    |---omero-client-<version>.jar
+    |---omero-client-lib-<version>.jar
     |---...
 
 How to Use

@@ -25,6 +25,12 @@
 
 	<pluginRepositories>
 		<pluginRepository>
+			<id>maven-central-plugins</id>
+			<url>
+				https://repo.maven.apache.org/maven2
+			</url>
+		</pluginRepository>
+		<pluginRepository>
 			<id>qbic-plugins-2</id>
 			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
 		</pluginRepository>
@@ -47,6 +53,19 @@
 
 	<!-- we only need to tell maven where to find our parent pom and other QBiC dependencies -->
 	<repositories>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>maven-central</id>
+			<name>Maven central</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
 		<repository>
 			<id>nexus-snapshots</id>
 			<name>QBiC Snapshots</name>

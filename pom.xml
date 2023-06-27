@@ -5,7 +5,7 @@
 
 	<groupId>life.qbic</groupId>
 	<artifactId>omero-client-lib</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.1</version>
 	<name>OMERO client library</name>
 	<url>http://github.com/qbicsoftware/omero-lib</url>
 	<description>OMERO client library - A Java-based library to access an OMERO server</description>
@@ -24,6 +24,12 @@
 	</properties>
 
 	<pluginRepositories>
+		<pluginRepository>
+			<id>maven-central-plugins</id>
+			<url>
+				https://repo.maven.apache.org/maven2
+			</url>
+		</pluginRepository>
 		<pluginRepository>
 			<id>qbic-plugins-2</id>
 			<url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
@@ -47,6 +53,19 @@
 
 	<!-- we only need to tell maven where to find our parent pom and other QBiC dependencies -->
 	<repositories>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>maven-central</id>
+			<name>Maven central</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
 		<repository>
 			<id>nexus-snapshots</id>
 			<name>QBiC Snapshots</name>
@@ -158,7 +177,7 @@
 			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-core</artifactId>
-				<version>3.5.6-Final</version>
+				<version>5.4.24.Final</version>
 			</dependency>
 			<!-- Using Bio-Formats official POMs rather than Ivy ones -->
 			<dependency>

@@ -8,7 +8,7 @@
 	<version>1.2.2</version>
 	<name>OMERO client library</name>
 	<url>http://github.com/qbicsoftware/omero-lib</url>
-	<description>OMERO client library - A Java-based library to access an OMERO server</description>
+	<description>OMERO client library - A Java-based library to access an OMERO server from QBiC's web portal</description>
 	<packaging>jar</packaging>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -126,7 +126,13 @@
 			<version>5.8.0</version>
 		</dependency>
 
-<!--
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.16.0</version>
+		</dependency>
+
+		<!--
 		<dependency>
 			<groupId>omero</groupId>
 			<artifactId>blitz</artifactId>
@@ -140,7 +146,7 @@
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
 		</dependency>
--->
+		-->
 
 		<dependency>
 			<groupId>org.spockframework</groupId>
@@ -208,8 +214,7 @@
 
 		</dependencies>
 	</dependencyManagement>
--->
-
+	-->
 
 	<build>
 		<plugins>

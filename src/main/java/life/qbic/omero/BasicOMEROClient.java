@@ -511,7 +511,6 @@ public class BasicOMEROClient {
     return generatedTiff;
   }
 
-
   /**
    * Attaches a FileAnnotation to the image containing the provided file. This methods also stores
    * the file in the RawFileStore

@@ -19,8 +19,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-<!--		<omero.version>5.4.10-ice36-b105</omero.version> -->
-<!--		<bioformats.version>5.8.2</bioformats.version> -->
 	</properties>
 
 	<pluginRepositories>
@@ -107,15 +105,6 @@
 			<name>unidata-releases</name>
 			<url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
 		</repository>
-
-		<!--
-		<repository>
-			<id>zeroc</id>
-			<name>zeroc</name>
-			<url>https://repo.zeroc.com/nexus/content/repositories/releases/</url>
-		</repository>
-		-->
-
 	</repositories>
 
 	<dependencies>
@@ -132,22 +121,6 @@
 			<version>1.16.0</version>
 		</dependency>
 
-		<!--
-		<dependency>
-			<groupId>omero</groupId>
-			<artifactId>blitz</artifactId>
-			<version>${omero.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-bsd</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-gpl</artifactId>
-		</dependency>
-		-->
-
 		<dependency>
 			<groupId>org.spockframework</groupId>
 			<artifactId>spock-core</artifactId>
@@ -156,65 +129,6 @@
 		</dependency>
 
 	</dependencies>
-
-	<!--
-	<dependencyManagement>
-		<dependencies>
-
-			<dependency>
-				<groupId>omero</groupId>
-				<artifactId>blitz</artifactId>
-				<version>${omero.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.springframework.ldap</groupId>
-						<artifactId>spring-ldap</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.hibernate</groupId>
-						<artifactId>hibernate-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>hsqldb</groupId>
-						<artifactId>hsqldb</artifactId>
-					</exclusion>
-
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-
-				</exclusions>
-			</dependency>
-
-			&lt;!&ndash; Override inherited value from blitz due to classifier &ndash;&gt;
-			<dependency>
-				<groupId>org.springframework.ldap</groupId>
-				<artifactId>spring-ldap</artifactId>
-				<version>1.3.0.RELEASE</version>
-				<classifier>all</classifier>
-			</dependency>
-			&lt;!&ndash; Rather than use the specialized 4510 jar, use Final &ndash;&gt;
-			<dependency>
-				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-core</artifactId>
-				<version>5.4.24.Final</version>
-			</dependency>
-			&lt;!&ndash; Using Bio-Formats official POMs rather than Ivy ones &ndash;&gt;
-			<dependency>
-				<groupId>ome</groupId>
-				<artifactId>formats-gpl</artifactId>
-				<version>${bioformats.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>ome</groupId>
-				<artifactId>formats-bsd</artifactId>
-				<version>${bioformats.version}</version>
-			</dependency>
-
-		</dependencies>
-	</dependencyManagement>
-	-->
 
 	<build>
 		<plugins>

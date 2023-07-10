@@ -159,9 +159,9 @@ public class BasicOMEROClient {
       long userGroupID = user.getGroupId();
 
       if(!group.equalsIgnoreCase("default")){
-        for (int i = 0; i < user.getGroups().size(); i++) {
-          if(user.getGroups().get(i).getName().equalsIgnoreCase(group)){
-            userGroupID = user.getGroups().get(i).getGroupId();
+        for (GroupData userGroup : user.getGroups()) {
+          if(userGroup.getName().equalsIgnoreCase(group)){
+            userGroupID = userGroup.getGroupId();
             break;
           }
         }

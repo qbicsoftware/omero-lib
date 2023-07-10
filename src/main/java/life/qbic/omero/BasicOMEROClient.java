@@ -89,6 +89,15 @@ public class BasicOMEROClient {
   private HashMap<Long, String> projectMap;
   private HashMap<Long, Set<DatasetData>> datasetMap;
 
+  /**
+   * Public constructor for BasicOMEROClient class.
+   *
+   * @param username The username to log into OMERO
+   * @param password a password associated to the given username
+   * @param hostname the OMERO hostname
+   * @param port the port at which the OMERO server can be reached
+   * @param userGroupName the group name for the session, the "default" string is to indicate the use of the OMERO server's default group for the user. If the group name is not found, the default group is used.
+   */
   public BasicOMEROClient(String username, String password, String hostname, int port, String userGroupName) {
 
     this.username = username;
@@ -134,7 +143,7 @@ public class BasicOMEROClient {
    * @param password a password associated to the given username
    * @param hostname the OMERO hostname
    * @param port the port at which the OMERO server can be reached
-   * @param group the group name for the session, "default" uses the OMERO server's default group for the user
+   * @param group the group name for the session, the "default" string is to indicate the use of the OMERO server's default group for the user. If the group name is not found, the default group is used.
    */
   private void connect(String username, String password, String hostname, int port, String group) {
 

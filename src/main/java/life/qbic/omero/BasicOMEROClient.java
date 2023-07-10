@@ -61,6 +61,7 @@ import omero.model.ProjectDatasetLinkI;
 import omero.model.ProjectI;
 import omero.model.enums.ChecksumAlgorithmSHA1160;
 import omero.romio.PlaneDef;
+import omero.gateway.model.GroupData;
 
 /////////////////////////////////////////////////////
 

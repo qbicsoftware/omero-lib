@@ -36,12 +36,10 @@ Note that this will install the package locally as the version specified in the 
 
 .. code-block:: xml
 
-        ...
-        <groupId>life.qbic</groupId>
-	    <artifactId>omero-client-lib</artifactId>
-	    <version>1.3.0</version>
-	    <name>OMERO client library</name>
-	    ...
+    <groupId>life.qbic</groupId>
+    <artifactId>omero-client-lib</artifactId>
+    <version>1.3.0</version>
+    <name>OMERO client library</name>
 
 How to Use
 ----------

@@ -1,10 +1,12 @@
-omero-lib
+omero-client-lib
 -----------------------------------
 
 |maven-build| |maven-test| |codeql| |release|
 |license| |java|
 
-OMERO client library - A Java-based library to access an OMERO server
+OMERO client library for QBiC's web portal - A Java-based library to access an OMERO server
+
+For technical details see the `OMERO Java API <https://omero.readthedocs.io/en/stable/developers/Java.html>`_
 
 How to Run
 -----------------
@@ -44,7 +46,7 @@ Note that this will install the package locally as the version specified in the 
 How to Use
 ----------
 
-This is a library and the most common way to use this library in particular is by including it in your `pom.xml` as a dependency:
+This is a library and the most common way to use this library in particular is by including it in your ``pom.xml`` as a dependency:
 
 .. code-block:: xml
 

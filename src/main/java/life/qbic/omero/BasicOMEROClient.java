@@ -61,41 +61,53 @@ import omero.model.ProjectDatasetLinkI;
 import omero.model.ProjectI;
 import omero.model.enums.ChecksumAlgorithmSHA1160;
 import omero.romio.PlaneDef;
+import omero.gateway.model.GroupData;
 
 /////////////////////////////////////////////////////
 
 /**
- * A client to handle operations on the OMERO server
+ * A client object to handle operations on the OMERO server
  *
- * This client can connect to the omero server.
+ *
  *
  * @since: 1.0.0
  */
 public class BasicOMEROClient {
 
-  //////////////////
   private final String hostname;
   private final int port;
   private final String username;
   private final String password;
   private final Gateway gateway;
   private final int serverId;
-  //////////////////
+
+  private String userGroupName;
+
   private String sessionId;
   private String sessionUuid;
   private SecurityContext securityContext;
 
-
   private HashMap<Long, String> projectMap;
   private HashMap<Long, Set<DatasetData>> datasetMap;
 
-  public BasicOMEROClient(String username, String password, String hostname, int port) {
+  /**
+   * Public constructor for BasicOMEROClient class.
+   *
+   * @param username The username to log into OMERO
+   * @param password a password associated to the given username
+   * @param hostname the OMERO hostname
+   * @param port the port at which the OMERO server can be reached
+   * @param userGroupName the group name for the session, the "default" string is to indicate the use of the OMERO server's default group for the user. If the group name is not found, the default group is used.
+   */
+  public BasicOMEROClient(String username, String password, String hostname, int port, String userGroupName) {
 
     this.username = username;
     this.password = password;
     this.hostname = hostname;
     this.port = port;
     this.serverId = 1;
+
+    this.userGroupName = userGroupName;
 
     this.sessionId = null;
     this.sessionUuid = null;
@@ -127,13 +139,14 @@ public class BasicOMEROClient {
   /**
    * Connects with the provided username and password. Existing connections are severed in favor of
    * the new connection.
-   * 
+   *
    * @param username The username to log into OMERO
    * @param password a password associated to the given username
    * @param hostname the OMERO hostname
    * @param port the port at which the OMERO server can be reached
+   * @param group the group name for the session, the "default" string is to indicate the use of the OMERO server's default group for the user. If the group name is not found, the default group is used.
    */
-  private void connect(String username, String password, String hostname, int port) {
+  private void connect(String username, String password, String hostname, int port, String group) {
 
     if (this.isConnected()) {
       this.disconnect();
@@ -143,13 +156,25 @@ public class BasicOMEROClient {
 
     try {
       ExperimenterData user = this.gateway.connect(loginCredentials);
-      this.securityContext = new SecurityContext(user.getGroupId());
+
+      long userGroupID = user.getGroupId();
+
+      if(!group.equalsIgnoreCase("default")){
+        for (GroupData userGroup : user.getGroups()) {
+          if(userGroup.getName().equalsIgnoreCase(group)){
+            userGroupID = userGroup.getGroupId();
+            break;
+          }
+        }
+      }
+
+      this.securityContext = new SecurityContext(userGroupID);
       this.sessionId = gateway.getSessionId(user);
       this.sessionUuid = gateway.getAdminService(securityContext).getEventContext().sessionUuid;
     } catch (DSOutOfServiceException dsOutOfServiceException) {
       throw new RuntimeException(
-          "Error while accessing omero service: broken connection, expired session or not logged in",
-          dsOutOfServiceException);
+              "Error while accessing omero service: broken connection, expired session or not logged in",
+              dsOutOfServiceException);
     } catch (ServerError serverError) {
       throw new RuntimeException("Omero store interaction failed.", serverError);
     }
@@ -175,7 +200,7 @@ public class BasicOMEROClient {
       }
     }
     this.disconnect();
-    this.connect(sessionUuid, "", this.hostname, this.port);
+    this.connect(sessionUuid, "", this.hostname, this.port, this.userGroupName);
   }
 
   /**
@@ -187,7 +212,7 @@ public class BasicOMEROClient {
     if (this.isConnected()) {
       return;
     }
-    this.connect(this.username, this.password, this.hostname, this.port);
+    this.connect(this.username, this.password, this.hostname, this.port, this.userGroupName);
   }
 
   /**
@@ -352,7 +377,7 @@ public class BasicOMEROClient {
       BrowseFacility browse = gateway.getFacility(BrowseFacility.class);
       ImageData image = browse.getImage(this.securityContext, imageID);
       if (image.getFormat() != null) {
-        downloadLinkAddress = "https://" + hostname + "/omero/webgateway/archived_files/download/"
+        downloadLinkAddress = "https://" + hostname + "/webgateway/archived_files/download/"
             + imageID + "?server=" + serverId + "&bsession=" + sessionUuid;
       } else {
         throw new IllegalArgumentException(
@@ -487,7 +512,6 @@ public class BasicOMEROClient {
     return generatedTiff;
   }
 
-
   /**
    * Attaches a FileAnnotation to the image containing the provided file. This methods also stores
    * the file in the RawFileStore
@@ -588,7 +612,7 @@ public class BasicOMEROClient {
       connect();
     }
 
-    return "https://" + hostname + "/omero/webclient/annotation/" + annotationID + "?server="
+    return "https://" + hostname + "/webclient/annotation/" + annotationID + "?server="
         + serverId + "&bsession=" + sessionUuid;
   }
 
@@ -936,7 +960,7 @@ public class BasicOMEROClient {
       connect();
     }
 
-    return "https://" + hostname + "/omero/webclient/img_detail/" + imageId + "/?server=" + serverId
+    return "https://" + hostname + "/webgateway/img_detail/" + imageId + "/?server=" + serverId
         + "&bsession=" + sessionUuid;
   }
 

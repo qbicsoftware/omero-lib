@@ -4,6 +4,24 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/>`_.
 
+1.3.0 (2023-07-11)
+------------------
+
+**Added**
+
+* Upgrades to latest OMERO server (v5.6.7)
+* Adds parameter to specify the user group of the session with the OMERO server (similar to project space)
+
+**Fixed**
+
+**Dependencies**
+
+* bump org.openmicroscopy/omero-gateway to 5.8.0
+* bump commons-codec/commons-codec to 1.16.0
+
+**Deprecated**
+
+
 1.2.1 (2021-06-08)
 ------------------
 

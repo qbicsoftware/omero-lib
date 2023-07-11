@@ -26,6 +26,23 @@ The JAR file will be created in the /target folder:
     |---omero-client-lib-<version>.jar
     |---...
 
+This library can be tested locally using:
+
+.. code-block:: bash
+
+    mvn clean install -U
+
+Note that this will install the package locally as the version specified in the pom.xml:
+
+.. code-block:: xml
+
+    ...
+    <groupId>life.qbic</groupId>
+	<artifactId>omero-client-lib</artifactId>
+	<version>1.3.0</version>
+	<name>OMERO client library</name>
+	...
+
 How to Use
 ----------
 

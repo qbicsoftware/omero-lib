@@ -32,16 +32,16 @@ This library can be tested locally using:
 
     mvn clean install -U
 
-Note that this will install the package locally as the version specified in the pom.xml:
+Note that this will install the package locally as the version specified in the pom.xml. See the following extract:
 
 .. code-block:: xml
 
-    ...
-    <groupId>life.qbic</groupId>
-	<artifactId>omero-client-lib</artifactId>
-	<version>1.3.0</version>
-	<name>OMERO client library</name>
-	...
+        ...
+        <groupId>life.qbic</groupId>
+	    <artifactId>omero-client-lib</artifactId>
+	    <version>1.3.0</version>
+	    <name>OMERO client library</name>
+	    ...
 
 How to Use
 ----------

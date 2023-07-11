@@ -32,7 +32,7 @@ This library can be tested locally using:
 
     mvn clean install -U
 
-Note that this will install the package locally as the version specified in the pom.xml. See the following extract:
+Note that this will install the package locally as the version specified in the ``pom.xml``. See the following extract:
 
 .. code-block:: xml
 
